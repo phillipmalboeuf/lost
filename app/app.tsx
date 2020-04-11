@@ -25,7 +25,7 @@ const App: FunctionComponent<{}> = () => {
       <h1>Lost at Sea</h1>
     </div>
     
-    <Map>
+    <Map speed={400}>
       <Boat />
       <Island lat={400} lng={400} />
       {/* {new Array(33).fill(null).map((v, i) => <Wave key={`wave_${i}`} lat={(Math.random() * 1600) - 800} lng={(Math.random() * 1600) - 800} />)} */}

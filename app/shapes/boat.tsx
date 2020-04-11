@@ -16,7 +16,7 @@ export class Boat extends Component<Props, State> {
   circle: Group
 
   componentDidMount() {
-    const { illo, direction } = this.context
+    const { illo, direction, speed } = this.context
 
     this.circle = new Group({
       addTo: illo,
@@ -25,7 +25,7 @@ export class Boat extends Component<Props, State> {
     
     new Ellipse({
       addTo: this.circle,
-      diameter: 800,
+      diameter: speed * 2,
       color: water[0],
       // fill: true,
       stroke: 8,
@@ -40,7 +40,7 @@ export class Boat extends Component<Props, State> {
       fill: true,
       stroke: 8,
       rotate: { x: -TAU/4, z: TAU/4 },
-      translate: { x: 333 }
+      translate: { x: speed - 66 }
     })
     
     this.deck = new Group({
