@@ -1,0 +1,7 @@
+/node_modules
+/.sass-cache
+/.cache
+/dist
+/_ignore
+npm-debug.log
+secret.json

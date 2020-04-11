@@ -1,0 +1,112 @@
+import React, { FunctionComponent, useRef, useEffect, createContext, useState, Component } from 'react'
+import { Illustration, Ellipse, Cylinder, Hemisphere, TAU, Dragger, Vector, Anchor } from 'zdog'
+import hotkeys from 'hotkeys-js'
+import anime from 'animejs'
+
+import { water } from '../settings/colors'
+
+export const MapContext = createContext({
+  illo: undefined as Illustration,
+  anchor: undefined as Anchor,
+  direction: 0,
+  moving: false
+})
+
+
+interface Props {}
+interface State {
+  illo?: Illustration
+  anchor?: Anchor
+  direction: number
+  coordinates: {
+    lat: number
+    lng: number
+  }
+  moving: boolean
+}
+
+export class Map extends Component<Props, State> {
+
+  speed = 400
+  
+  svg: SVGSVGElement
+  state: State = {
+    direction: 0,
+    coordinates: {
+      lat: 0,
+      lng: 0
+    },
+    moving: false
+  }
+
+  componentDidMount() {
+    let illo = new Illustration({
+      element: this.svg,
+      // dragRotate: true,
+      rotate: { x: -TAU/13 },
+      scale: 0.33,
+    })
+
+    let anchor = new Anchor({
+      addTo: illo
+    })
+
+    this.setState({
+      illo,
+      anchor
+    })
+
+    this.svg.addEventListener('pointermove', event => {
+      this.setState({
+        direction: Math.atan2(event.y - (window.innerHeight/2), event.x - (window.innerWidth/2))
+      })
+    })
+
+    this.svg.addEventListener('click', this.onward.bind(this))
+    hotkeys('space', this.onward.bind(this))
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    this.state.illo.updateRenderGraph()
+  }
+
+
+  onward(e: Event) {
+    e.preventDefault()
+
+    if (!this.state.moving) {
+      let coordinates = {
+        lat: this.state.coordinates.lat + (Math.sin(this.state.direction) * this.speed),
+        lng: this.state.coordinates.lng + (Math.cos(this.state.direction) * this.speed)
+      }
+
+      this.setState({
+        coordinates,
+        moving: true
+      })
+
+      anime({
+        targets: this.state.anchor.translate,
+        x: -coordinates.lng,
+        z: -coordinates.lat,
+        easing: 'easeOutQuad',
+        update: () => {
+          this.state.illo.updateRenderGraph()
+        },
+        complete: () => {
+          this.setState({ moving: false })
+        }
+      })
+    }
+  }
+
+  render() {
+    const { illo, anchor, direction, moving } = this.state
+    const { children } = this.props
+
+    return <MapContext.Provider value={{ illo, anchor, direction, moving }}>
+      <svg style={{ position: 'fixed', top: 0, left: 0, backgroundColor: water[1] }} ref={element => this.svg = element} width={window.innerWidth} height={window.innerHeight} />
+      {illo && children}
+    </MapContext.Provider>
+  }
+}
