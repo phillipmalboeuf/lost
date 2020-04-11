@@ -1,10 +1,11 @@
 
-import type { ObjectId, Db, FilterQuery } from 'mongodb'
+import type { Db, FilterQuery } from 'mongodb'
+import { nanoid } from 'nanoid'
+
 import { db } from '../clients/mongo'
 
-
 export interface ModelDocument {
-  _id: ObjectId
+  _id: string
   created_at: Date
 }
 
@@ -12,7 +13,7 @@ export interface ModelDocument {
 let database: Db = undefined
 db().then(_ => database = _)
 
-export const createModel = <T, F = { _id: ObjectId }>(
+export const createModel = <T, F = { _id: string }>(
   name: string,
   preprocess=async(data)=>data,
   postprocess=async(data)=>data,
@@ -46,6 +47,7 @@ export const createModel = <T, F = { _id: ObjectId }>(
 
     createOne: async (data: any) => {
       return database.collection(name).insertOne({
+        _id: nanoid(),
         created_at: new Date(),
         ...(await processes.preprocess(data))
       }).then(result => ({ _id: result.insertedId }))

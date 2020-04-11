@@ -1,0 +1,1 @@
+export const text = ['10vw', '1vw', '0.5vw']

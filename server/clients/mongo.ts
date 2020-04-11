@@ -1,4 +1,4 @@
-import { MongoClient, ObjectId, Db } from 'mongodb'
+import { MongoClient, Db } from 'mongodb'
 
 import { CONF } from '../config'
 

@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+
 import { createModel, ModelDocument } from './_model'
 import { Position, MapDocument, IslandDocument } from './map'
 import { PlayerDocument } from './player'
