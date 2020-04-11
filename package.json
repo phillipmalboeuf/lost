@@ -9,6 +9,11 @@
   },
   "author": "Phillip Malboeuf <phil@phils.computer>",
   "license": "ISC",
+  "alias": {
+    "react": "preact/compat",
+    "react-dom/test-utils": "preact/test-utils",
+    "react-dom": "preact/compat"
+  },
   "dependencies": {
     "animejs": "^3.2.0",
     "hotkeys-js": "^3.7.6",
@@ -16,9 +21,7 @@
     "mongodb": "^3.5.5",
     "nconf": "^0.10.0",
     "polka": "^0.5.2",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-spring": "^8.0.27",
+    "preact": "^10.4.0",
     "stripe": "^8.33.0",
     "styled-components": "^5.0.1",
     "ws": "^7.2.3",
