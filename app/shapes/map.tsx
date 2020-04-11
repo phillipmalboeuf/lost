@@ -4,6 +4,7 @@ import hotkeys from 'hotkeys-js'
 import anime from 'animejs'
 
 import { water } from '../settings/colors'
+import { Compass } from './compass'
 
 export const MapContext = createContext({
   illo: undefined as Illustration,
@@ -18,6 +19,7 @@ interface State {
   illo?: Illustration
   anchor?: Anchor
   direction: number
+  rotation: number
   coordinates: {
     lat: number
     lng: number
@@ -32,6 +34,7 @@ export class Map extends Component<Props, State> {
   svg: SVGSVGElement
   state: State = {
     direction: 0,
+    rotation: 0,
     coordinates: {
       lat: 0,
       lng: 0
@@ -58,7 +61,7 @@ export class Map extends Component<Props, State> {
 
     this.svg.addEventListener('pointermove', event => {
       this.setState({
-        direction: Math.atan2(event.y - (window.innerHeight/2), event.x - (window.innerWidth/2))
+        direction: Math.atan2(event.y - (window.innerHeight/2), event.x - (window.innerWidth/2)) - this.state.rotation
       })
     })
 
@@ -67,6 +70,7 @@ export class Map extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
+    this.state.illo.rotate.y = this.state.rotation
     this.state.illo.updateRenderGraph()
   }
 
@@ -107,6 +111,7 @@ export class Map extends Component<Props, State> {
     return <MapContext.Provider value={{ illo, anchor, direction, moving }}>
       <svg style={{ position: 'fixed', top: 0, left: 0, backgroundColor: water[1] }} ref={element => this.svg = element} width={window.innerWidth} height={window.innerHeight} />
       {illo && children}
+      <Compass onRotate={rotation => this.setState({ rotation })} />
     </MapContext.Provider>
   }
 }
