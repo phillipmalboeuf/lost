@@ -1,10 +1,12 @@
 console.log('Lost at Sea')
 
-import json from 'json-complete'
+
 import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import type { FunctionComponent } from 'react'
 import type { Entry } from 'contentful'
+import { BrowserRouter, Route, Switch, Redirect, Router } from 'react-router-dom'
+import { createBrowserHistory, History, UnregisterCallback } from 'history'
 
 import { Boat } from './shapes/boat'
 import { Map } from './shapes/map'
@@ -14,78 +16,59 @@ import { Button } from './interface/button'
 import { Title } from './interface/text'
 import { Input } from './interface/input'
 
+import { send, on, useEvent } from './socket'
+
+import type { MapDocument } from '../server/models/map'
+import type { BoatDocument } from '../server/models/boat'
+
+import { M } from './routes/m'
+import { B } from './routes/b'
 
 
-// ws.onopen = function open() {
-//   ws.send('something')
-// }
+const history = createBrowserHistory()
 
 
 const App: FunctionComponent<{}> = () => {
-  const ws = new WebSocket('ws://localhost:8088')
-
-  const [map, setMap] = useState({ _id: 'id' })
-  const [boat, setBoat] = useState<{ name: string }>()
-  const [crew, setCrew] = useState<Entry<{ title: string }>[]>()
 
   useEffect(() => {
-    ws.onmessage = function incoming({ data }) {
-      const { event, body } = json.decode(data)
-      return ({
-        newMap: () => setMap(body),
-        newBoat: () => setBoat(body),
-        boatChange: () => setBoat(body),
-        listCrewMembers: () => setCrew(body)
-      }[event])()
-    }
+    on('newMap', ({ detail }) => history.replace(`/m/${detail._id}`))
+    on('newBoat', ({ detail }) => history.replace(`/m/${detail.map_id}/b/${detail._id}`))
   }, [])
-
-  function send(event: string, body?: object) {
-    ws.send(json.encode({
-      event,
-      body
-    }))
-  }
 
   function newMap() {
     send('newMap', {})
   }
 
-  function newBoat(name: string) {
-    send('newBoat', { name })
+  function newBoat(name: string, map_id: string) {
+    send('newBoat', { name, map_id })
     send('listCrewMembers')
   }
 
-  return <>
+  return <Router history={history}>
     <div style={{ position: 'relative', zIndex: 1 }}>
       <Title>Lost at Sea</Title>
 
-      {!map && <>
-        <Button onClick={newMap}>Create a New Map</Button>
-      </>}
-
-      {map && !boat && <form onSubmit={e => {
-        e.preventDefault()
-        newBoat(e.currentTarget['boatname'].value)
-      }}>
-        <label htmlFor='name'>Name your boat</label>
-        <Input name='boatname' />
-        <Button>Anchor Away!</Button>
-      </form>}
-
-      {boat && boat.name}
-      {boat && crew && <ul>
-        {crew.map(member => <li key={member.sys.id}>{member.fields.title}</li>)}  
-      </ul>}
+      <Switch>
+        <Route exact path='/' render={props => <>
+          <Button onClick={newMap}>Create a New Map</Button>
+        </>} />
+        <Route exact path='/m/:_id' render={props => <form onSubmit={e => {
+          e.preventDefault()
+          newBoat(e.currentTarget['boatname'].value, props.match.params._id)
+        }}>
+          <label htmlFor='name'>Name your boat</label>
+          <Input name='boatname' />
+          <Button>Anchor Away!</Button>
+        </form>} />
+      </Switch>
     </div>
-
     
-    {map && <Map speed={400}>
-      {boat && <Boat />}
-      <Island lat={400} lng={400} />
-      {/* {new Array(33).fill(null).map((v, i) => <Wave key={`wave_${i}`} lat={(Math.random() * 1600) - 800} lng={(Math.random() * 1600) - 800} />)} */}
-    </Map>}
-  </>
+    <Switch>
+      <Route path='/m/:_id' render={props => <M key={props.match.params._id} {...props}>
+        <Route exact path='/m/:map_id/b/:_id' render={props => <B key={props.match.params._id} {...props} />} />
+      </M>} />
+    </Switch>
+  </Router>
 }
 
 

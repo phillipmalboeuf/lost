@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "app": "parcel index.html -p 8080 --open",
+    "app": "parcel index.html -p 8080 --open --no-hmr",
     "server": "parcel watch server/server.ts --target=node --out-file=server.js | nodemon dist/server.js"
   },
   "author": "Phillip Malboeuf <phil@phils.computer>",
@@ -24,6 +24,7 @@
     "nconf": "^0.10.0",
     "polka": "^0.5.2",
     "preact": "^10.4.0",
+    "react-router-dom": "^5.1.2",
     "stripe": "^8.33.0",
     "styled-components": "^5.0.1",
     "ws": "^7.2.3",
@@ -34,7 +35,8 @@
     "@types/mongodb": "^3.5.3",
     "@types/nconf": "^0.10.0",
     "@types/react": "^16.9.25",
-    "@types/react-dom": "^16.9.5",
+    "@types/react-dom": "^16.9.6",
+    "@types/react-router-dom": "^5.1.4",
     "@types/stripe": "^7.13.22",
     "@types/styled-components": "^5.0.1",
     "@types/ws": "^7.2.3",

@@ -27,9 +27,14 @@ const events = {
   newMap: async () => {
     return await Map.createOne({})
   },
-  newBoat: async ({ name }) => {
-    const { _id } = await Boat.createOne({ name })
-    return Boat.one({ _id })
+  newBoat: async ({ name, map_id }) => {
+    return {
+      ...await Boat.createOne({ name, map_id }),
+      map_id
+    }
+  },
+  fetchBoat: async ({ _id }) => {
+    return await Boat.one({ _id })
   },
   listCrewMembers: async () => {
     return (await contentful.getEntries({ content_type: 'crewMember' })).items

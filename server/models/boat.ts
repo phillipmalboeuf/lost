@@ -3,7 +3,7 @@ import { createModel, ModelDocument } from './_model'
 import { Position, MapDocument, IslandDocument } from './map'
 import { PlayerDocument } from './player'
 
-interface BoatDocument extends ModelDocument {
+export interface BoatDocument extends ModelDocument {
   name: string
   position: Position
   map: MapDocument
