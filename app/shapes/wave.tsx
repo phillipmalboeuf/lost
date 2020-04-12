@@ -2,7 +2,7 @@ import React, { FunctionComponent, useRef, useEffect, useContext, Component } fr
 import { Shape, Ellipse, Cylinder, Hemisphere, TAU, Dragger } from 'zdog'
 
 import { MapContext } from './map'
-import { Position } from '../../server/models/map'
+import type { Position } from '../../server/models/map'
 
 interface Props {
   lat: number

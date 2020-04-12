@@ -2,7 +2,7 @@ import React, { FunctionComponent, useRef, useEffect, useContext, Component } fr
 import { Shape, Ellipse, Cylinder, Hemisphere, TAU, Dragger, Group, Anchor } from 'zdog'
 
 import { MapContext } from './map'
-import { Position } from '../../server/models/map'
+import type { Position } from '../../server/models/map'
 import { sand, grass } from '../settings/colors'
 
 interface Props {

@@ -21,8 +21,8 @@ export const createModel = <T, F = { _id: string }>(
 ) => {
   
   const processes = {
-    preprocess: async (data: any) => preprocess(data),
-    postprocess: async (data: any): Promise<T> => postprocess(data)
+    preprocess: async (data: any) => preprocess ? preprocess(data) : data,
+    postprocess: async (data: any): Promise<T> => postprocess ? postprocess(data) : data
   }
 
   return {
@@ -64,12 +64,12 @@ export const createModel = <T, F = { _id: string }>(
         .then(result => ({ deleted: result.result.n }))
     },
 
-    agregate: async (pipeline: object[]) => {
+    aggregate: async (pipeline: object[]) => {
       return database.collection(name).aggregate(pipeline)
     },
 
-    watch: async (filters?: FilterQuery<F>) => {
-      return database.collection(name).watch(filters ? [{ '$match': filters }] : [])
+    watch: async (filters: FilterQuery<F>) => {
+      return database.collection(name).watch([{ '$match': filters }], { fullDocument : 'updateLookup' })
     }
   }
 }

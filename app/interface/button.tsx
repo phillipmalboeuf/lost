@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { ink } from '../settings/colors'
 import { text } from '../settings/sizes'
 
-const Sutton = styled.button`
+const Sutton = styled.button<{ transparent?: boolean }>`
   outline: none;
   cursor: pointer;
   color: white;
@@ -14,6 +14,12 @@ const Sutton = styled.button`
   border: none;
   border-radius: ${text[2]};
 
+  ${props => props.transparent && css`
+    color: inherit;
+    padding: 0;
+    background: none;
+  `}
+
   &:active {
     transform: scale(0.96);
   }
@@ -21,9 +27,10 @@ const Sutton = styled.button`
 
 export const Button: FunctionComponent<{
   to?: string
+  transparent?: boolean
   onClick?: () => void | Promise<void>
-}> = ({ children, onClick }) => {
-  return <Sutton onClick={onClick}>
+}> = ({ children, onClick, transparent }) => {
+  return <Sutton onClick={onClick} transparent={transparent}>
     {children}
   </Sutton>
 }

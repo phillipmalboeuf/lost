@@ -16,7 +16,7 @@ export class Compass extends Component<Props, State> {
   svg: SVGSVGElement
   state: State = {
     down: false,
-    rotation: 0
+    rotation: -TAU/4
   }
 
   illo: Illustration

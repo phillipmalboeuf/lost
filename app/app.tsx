@@ -41,7 +41,6 @@ const App: FunctionComponent<{}> = () => {
 
   function newBoat(name: string, map_id: string) {
     send('newBoat', { name, map_id })
-    send('listCrewMembers')
   }
 
   return <Router history={history}>
@@ -56,8 +55,7 @@ const App: FunctionComponent<{}> = () => {
           e.preventDefault()
           newBoat(e.currentTarget['boatname'].value, props.match.params._id)
         }}>
-          <label htmlFor='name'>Name your boat</label>
-          <Input name='boatname' />
+          <Input name='boatname' label={'Name your boat'} />
           <Button>Anchor Away!</Button>
         </form>} />
       </Switch>

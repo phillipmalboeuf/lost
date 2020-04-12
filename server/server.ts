@@ -6,6 +6,7 @@ import contentful from './clients/contentful'
 
 import { Boat } from './models/boat'
 import { Map } from './models/map'
+import { Crew, Stats } from './models/crew'
 
 
 // polka()
@@ -34,7 +35,43 @@ const events = {
     }
   },
   fetchBoat: async ({ _id }) => {
-    return await Boat.one({ _id })
+    const [boat, crew] = await Promise.all([
+      Boat.one({ _id }),
+      Crew.list({ boat_id: _id })
+    ])
+    return {
+      ...boat,
+      crew
+    }
+  },
+  watchBoat: async ({ _id }, ws: WebSocket) => {
+    Boat.watch({ 'documentKey._id': _id }).then(stream => {
+      stream.on('change', (change) => {
+        ws.send(json.encode({
+          event: 'watchBoat',
+          data: change.fullDocument
+        }))
+      })
+
+      ws.onclose = () => stream.close()
+    })
+  },
+  watchCrew: async ({ boat_id }, ws: WebSocket) => {
+    
+    Crew.watch({ 'fullDocument.boat_id': boat_id }).then(stream => {
+      stream.on('change', async (change) => {
+        ws.send(json.encode({
+          event: 'watchCrew',
+          body: await Crew.list({ boat_id })
+        }))
+      })
+
+      ws.onclose = () => stream.close()
+    })
+  },
+  newCrew: async ({ name, content_id, boat_id }) => {
+    const { fields: { bravery, intelligence, charm, dexterity } } = await contentful.getEntry<Stats>(content_id)
+    return await Crew.createOne({ name, content_id, boat_id, bravery, intelligence, charm, dexterity })
   },
   listCrewMembers: async () => {
     return (await contentful.getEntries({ content_type: 'crewMember' })).items
@@ -44,19 +81,10 @@ const events = {
 wss.on('connection', function connection(ws) {  
   ws.on('message', async function incoming(message) {
     const { event, body } = json.decode(message)
-    const response = await events[event](body)
+    const response = await events[event](body, ws)
     ws.send(json.encode({
       event,
       body: response
     }))
   })
-
-  // Boat.watch({}).then(stream => {
-  //   stream.on('change', ({ fullDocument }) => {
-  //     ws.send(json.encode({
-  //       event: 'boatChange',
-  //       data: fullDocument
-  //     }))
-  //   })
-  // })
 })

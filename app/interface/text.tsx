@@ -9,3 +9,10 @@ export const Title = styled.h1`
   line-height: 1;
   margin: 0;
 `
+
+export const Subtitle = styled.h3`
+  font-size: ${text[1]};
+  font-weight: bold;
+  line-height: 1;
+  margin: 0;
+`

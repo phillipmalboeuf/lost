@@ -35,7 +35,7 @@ export class Map extends Component<Props, State> {
   svg: SVGSVGElement
   state: State = {
     direction: 0,
-    rotation: 0,
+    rotation: -TAU/4,
     coordinates: {
       lat: 0,
       lng: 0
