@@ -50,7 +50,7 @@ export const createModel = <T, F = { _id: string }>(
         _id: nanoid(),
         created_at: new Date(),
         ...(await processes.preprocess(data))
-      }).then(result => ({ _id: result.insertedId }))
+      }).then(result => ({ _id: result.insertedId as string }))
     },
 
     updateOne: async (filters: FilterQuery<F>, data: any) => {

@@ -1,1 +1,1 @@
-export const text = ['10vw', '1vw', '0.5vw']
+export const text = ['5rem', '1rem', '0.5rem']

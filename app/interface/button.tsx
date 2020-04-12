@@ -8,6 +8,7 @@ const Sutton = styled.button`
   cursor: pointer;
   color: white;
   background: ${ink[0]};
+  font-family: 'Inter';
   font-size: ${text[1]};
   padding: ${text[1]};
   border: none;

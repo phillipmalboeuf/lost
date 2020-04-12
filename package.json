@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "animejs": "^3.2.0",
+    "contentful": "^7.14.2",
     "hotkeys-js": "^3.7.6",
     "json-complete": "^2.0.0",
     "mongodb": "^3.5.5",

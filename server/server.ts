@@ -2,6 +2,8 @@ import polka from 'polka'
 import WebSocket from 'ws'
 import json from 'json-complete'
 
+import contentful from './clients/contentful'
+
 import { Boat } from './models/boat'
 import { Map } from './models/map'
 
@@ -24,6 +26,13 @@ const wss = new WebSocket.Server({
 const events = {
   newMap: async () => {
     return await Map.createOne({})
+  },
+  newBoat: async ({ name }) => {
+    const { _id } = await Boat.createOne({ name })
+    return Boat.one({ _id })
+  },
+  listCrewMembers: async () => {
+    return (await contentful.getEntries({ content_type: 'crewMember' })).items
   }
 }
 
@@ -37,12 +46,12 @@ wss.on('connection', function connection(ws) {
     }))
   })
 
-  Boat.watch({}).then(stream => {
-    stream.on('change', ({ fullDocument }) => {
-      ws.send(json.encode({
-        event: 'boatChange',
-        data: fullDocument
-      }))
-    })
-  })
+  // Boat.watch({}).then(stream => {
+  //   stream.on('change', ({ fullDocument }) => {
+  //     ws.send(json.encode({
+  //       event: 'boatChange',
+  //       data: fullDocument
+  //     }))
+  //   })
+  // })
 })
