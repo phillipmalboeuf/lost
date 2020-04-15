@@ -5,11 +5,13 @@ import anime from 'animejs'
 
 import { water } from '../settings/colors'
 import { Compass } from './compass'
+import type { Position } from '../../server/models/map'
 
 export const MapContext = createContext({
   illo: undefined as Illustration,
   anchor: undefined as Anchor,
   direction: 0,
+  position: undefined as Position,
   speed: 400,
   moving: false
 })
@@ -23,10 +25,7 @@ interface State {
   anchor?: Anchor
   direction: number
   rotation: number
-  coordinates: {
-    lat: number
-    lng: number
-  }
+  position: Position
   moving: boolean
 }
 
@@ -36,7 +35,7 @@ export class Map extends Component<Props, State> {
   state: State = {
     direction: 0,
     rotation: -TAU/4,
-    coordinates: {
+    position: {
       lat: 0,
       lng: 0
     },
@@ -80,20 +79,20 @@ export class Map extends Component<Props, State> {
     e.preventDefault()
 
     if (!this.state.moving) {
-      let coordinates = {
-        lat: this.state.coordinates.lat + (Math.sin(this.state.direction) * this.props.speed),
-        lng: this.state.coordinates.lng + (Math.cos(this.state.direction) * this.props.speed)
+      let position = {
+        lat: Math.round(this.state.position.lat + (Math.sin(this.state.direction) * this.props.speed)),
+        lng: Math.round(this.state.position.lng + (Math.cos(this.state.direction) * this.props.speed))
       }
 
       this.setState({
-        coordinates,
+        position,
         moving: true
       })
 
       anime({
         targets: this.state.anchor.translate,
-        x: -coordinates.lng,
-        z: -coordinates.lat,
+        x: -position.lng,
+        z: -position.lat,
         easing: 'easeOutQuad',
         update: () => {
           this.state.illo.updateRenderGraph()
@@ -106,10 +105,10 @@ export class Map extends Component<Props, State> {
   }
 
   render() {
-    const { illo, anchor, direction, moving } = this.state
+    const { illo, anchor, direction, position, moving } = this.state
     const { children, speed } = this.props
 
-    return <MapContext.Provider value={{ illo, anchor, direction, moving, speed }}>
+    return <MapContext.Provider value={{ illo, anchor, direction, position, moving, speed }}>
       <svg style={{ position: 'fixed', top: 0, left: 0, backgroundColor: water[1] }} ref={element => this.svg = element} width={window.innerWidth} height={window.innerHeight} />
       {illo && children}
       <Compass onRotate={rotation => this.setState({ rotation })} />

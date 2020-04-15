@@ -7,6 +7,7 @@ import contentful from './clients/contentful'
 import { Boat } from './models/boat'
 import { Map } from './models/map'
 import { Crew, Stats } from './models/crew'
+import { Obstacle } from './models/obstacle'
 
 
 // polka()
@@ -75,6 +76,27 @@ const events = {
   },
   listCrewMembers: async () => {
     return (await contentful.getEntries({ content_type: 'crewMember' })).items
+  },
+  onward: async ({ position, boat_id }) => {
+
+    const trigger = Math.round(Math.random() * 12) + 1
+
+    const [boat, content] = await Promise.all([
+      Boat.one({ _id: boat_id }),
+      contentful.getEntries({ content_type: 'obstacle', 'fields.trigger': trigger })
+    ])
+    
+    const obstacle = await Obstacle.createOne({
+      boat_id,
+      trigger,
+      content_id: content.items[0].sys.id
+    })
+
+    return Boat.updateOne({ _id: boat_id }, {
+      position,
+      current_obstacle_id: obstacle._id,
+      triggers: [...(boat.triggers ?? []), trigger]
+    })
   }
 }
 

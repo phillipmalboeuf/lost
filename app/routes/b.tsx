@@ -1,10 +1,11 @@
-import React, { useState, Fragment, useEffect } from 'react'
+import React, { useState, Fragment, useEffect, useContext } from 'react'
 import styled from 'styled-components'
 import type { FunctionComponent } from 'react'
 import type { RouteComponentProps } from 'react-router-dom'
 import type { Entry } from 'contentful'
 
 import { Boat } from '../shapes/boat'
+import { MapContext } from '../shapes/map'
 import { useEvent, send, on, off } from '../socket'
 
 import type { BoatDocument } from '../../server/models/boat'
@@ -38,11 +39,13 @@ const ListItem = styled.li`
 
 function stats(current: Stats, base?: Stats) {
   return base
-  ? <>B: {current.bravery} / {base.bravery} , I: {current.intelligence} / {base.intelligence} , C: {current.charm} / {base.charm} , D: {current.dexterity} / {base.dexterity} </>
+  ? <>B: {current.bravery} / {base.bravery}, I: {current.intelligence} / {base.intelligence}, C: {current.charm} / {base.charm}, D: {current.dexterity} / {base.dexterity} </>
   : <>B: {current.bravery}, I: {current.intelligence}, C: {current.charm}, D: {current.dexterity}</>
 }
 
 export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props => {
+  const { position } = useContext(MapContext)
+
   const boat = useEvent<BoatDocument>('fetchBoat', { _id: props.match.params._id })
   const crewList = useEvent<Entry<{ title: string, bio: string } & Stats>[]>('listCrewMembers')
 
@@ -56,6 +59,12 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
     on('newCrew', success)
     return () => off('newCrew', success)
   }, [])
+
+  useEffect(() => {
+    if (position) {
+      send('onward', { position, boat_id: props.match.params._id })
+    }
+  }, [position])
 
   function success() {
     setAdding(false)
@@ -109,6 +118,7 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
           </Card>
         </Overlay>}
       </Card>
+      {boat.position && <h3>{boat.position.lat} {boat.position.lng}</h3>}
     </div>
   </>
 }

@@ -11,6 +11,7 @@ export interface BoatDocument extends ModelDocument {
   home: IslandDocument
   players: PlayerDocument[]
   crew: CrewDocument[]
+  triggers: number[]
 }
 
 export const Boat = createModel<BoatDocument>('boats')
