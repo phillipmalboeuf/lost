@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useRef, useEffect, createContext, useState, Component } from 'react'
 import { Illustration, Ellipse, Cylinder, Hemisphere, TAU, Dragger, Vector, Anchor } from 'zdog'
-import hotkeys from 'hotkeys-js'
 import anime from 'animejs'
 
 import { water } from '../settings/colors'
@@ -8,24 +7,22 @@ import { Compass } from './compass'
 import type { Position } from '../../server/models/map'
 
 export const MapContext = createContext({
+  svg: undefined as SVGSVGElement,
   illo: undefined as Illustration,
   anchor: undefined as Anchor,
-  direction: 0,
-  position: undefined as Position,
-  speed: 400,
+  rotation: 0,
+  move: undefined as (position: Position, animated?: boolean) => void,
   moving: false
 })
 
 
 interface Props {
-  speed: number
+  // speed: number
 }
 interface State {
   illo?: Illustration
   anchor?: Anchor
-  direction: number
   rotation: number
-  position: Position
   moving: boolean
 }
 
@@ -33,12 +30,7 @@ export class Map extends Component<Props, State> {
   
   svg: SVGSVGElement
   state: State = {
-    direction: 0,
     rotation: -TAU/4,
-    position: {
-      lat: 0,
-      lng: 0
-    },
     moving: false
   }
 
@@ -58,15 +50,6 @@ export class Map extends Component<Props, State> {
       illo,
       anchor
     })
-
-    this.svg.addEventListener('pointermove', event => {
-      this.setState({
-        direction: Math.atan2(event.y - (window.innerHeight/2), event.x - (window.innerWidth/2)) - this.state.rotation
-      })
-    })
-
-    this.svg.addEventListener('click', this.onward.bind(this))
-    hotkeys('space', this.onward.bind(this))
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
@@ -75,40 +58,39 @@ export class Map extends Component<Props, State> {
   }
 
 
-  onward(e: Event) {
-    e.preventDefault()
-
+  move(position: Position, animated = true) {
     if (!this.state.moving) {
-      let position = {
-        lat: Math.round(this.state.position.lat + (Math.sin(this.state.direction) * this.props.speed)),
-        lng: Math.round(this.state.position.lng + (Math.cos(this.state.direction) * this.props.speed))
+      if (animated) {
+        this.setState({
+          moving: true
+        })
+
+        anime({
+          targets: this.state.anchor.translate,
+          x: -position.lng,
+          z: -position.lat,
+          easing: 'easeOutQuad',
+          update: () => {
+            this.state.illo.updateRenderGraph()
+          },
+          complete: () => {
+            this.setState({ moving: false })
+          }
+        })
+      } else {
+        this.state.anchor.translate.x = -position.lng
+        this.state.anchor.translate.z = -position.lat
+        this.state.illo.updateRenderGraph()
       }
-
-      this.setState({
-        position,
-        moving: true
-      })
-
-      anime({
-        targets: this.state.anchor.translate,
-        x: -position.lng,
-        z: -position.lat,
-        easing: 'easeOutQuad',
-        update: () => {
-          this.state.illo.updateRenderGraph()
-        },
-        complete: () => {
-          this.setState({ moving: false })
-        }
-      })
     }
   }
 
   render() {
-    const { illo, anchor, direction, position, moving } = this.state
-    const { children, speed } = this.props
+    const { svg, move } = this
+    const { illo, anchor, moving, rotation } = this.state
+    const { children } = this.props
 
-    return <MapContext.Provider value={{ illo, anchor, direction, position, moving, speed }}>
+    return <MapContext.Provider value={{ svg, illo, anchor, move: move.bind(this), moving, rotation }}>
       <svg style={{ position: 'fixed', top: 0, left: 0, backgroundColor: water[1] }} ref={element => this.svg = element} width={window.innerWidth} height={window.innerHeight} />
       {illo && children}
       <Compass onRotate={rotation => this.setState({ rotation })} />

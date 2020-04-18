@@ -38,7 +38,6 @@
     "@types/react-dom": "^16.9.6",
     "@types/react-router-dom": "^5.1.4",
     "@types/stripe": "^7.13.22",
-    "@types/styled-components": "^5.0.1",
     "@types/ws": "^7.2.3",
     "@types/zdog": "^1.1.1",
     "nodemon": "^2.0.2",

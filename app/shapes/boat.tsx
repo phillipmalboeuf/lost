@@ -4,7 +4,10 @@ import { Illustration, Ellipse, Cylinder, Hemisphere, TAU, Dragger, Polygon, Rec
 import { MapContext } from './map'
 import { sand, wood, grass, water } from '../settings/colors'
 
-interface Props {}
+interface Props {
+  direction: number
+  speed: number
+}
 interface State {}
 
 export class Boat extends Component<Props, State> {
@@ -16,7 +19,8 @@ export class Boat extends Component<Props, State> {
   circle: Group
 
   componentDidMount() {
-    const { illo, direction, speed } = this.context
+    const { illo } = this.context
+    const { direction, speed } = this.props
 
     this.circle = new Group({
       addTo: illo,
@@ -108,7 +112,9 @@ export class Boat extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    const { direction, moving } = this.context
+    const { moving, illo } = this.context
+    const { direction } = this.props
+    
     if (!this.circle.visible && !moving) {
       this.circle.visible = true
     } else if (this.circle.visible && moving) {
@@ -120,6 +126,8 @@ export class Boat extends Component<Props, State> {
       this.sail.rotate.y = direction
       this.circle.rotate.y = direction
     }
+
+    illo.updateRenderGraph()
   }
 
   render() {

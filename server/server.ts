@@ -35,30 +35,21 @@ const events = {
       map_id
     }
   },
-  fetchBoat: async ({ _id }) => {
-    const [boat, crew] = await Promise.all([
-      Boat.one({ _id }),
-      Crew.list({ boat_id: _id })
-    ])
-    return {
-      ...boat,
-      crew
-    }
-  },
   watchBoat: async ({ _id }, ws: WebSocket) => {
     Boat.watch({ 'documentKey._id': _id }).then(stream => {
-      stream.on('change', (change) => {
+      stream.on('change', async (change) => {
         ws.send(json.encode({
           event: 'watchBoat',
-          data: change.fullDocument
+          body: change.fullDocument
         }))
       })
 
       ws.onclose = () => stream.close()
     })
+
+    return Boat.one({ _id })
   },
   watchCrew: async ({ boat_id }, ws: WebSocket) => {
-    
     Crew.watch({ 'fullDocument.boat_id': boat_id }).then(stream => {
       stream.on('change', async (change) => {
         ws.send(json.encode({
@@ -69,6 +60,8 @@ const events = {
 
       ws.onclose = () => stream.close()
     })
+
+    return Crew.list({ boat_id })
   },
   newCrew: async ({ name, content_id, boat_id }) => {
     const { fields: { bravery, intelligence, charm, dexterity } } = await contentful.getEntry<Stats>(content_id)
@@ -78,7 +71,6 @@ const events = {
     return (await contentful.getEntries({ content_type: 'crewMember' })).items
   },
   onward: async ({ position, boat_id }) => {
-
     const trigger = Math.round(Math.random() * 12) + 1
 
     const [boat, content] = await Promise.all([
@@ -97,6 +89,17 @@ const events = {
       current_obstacle_id: obstacle._id,
       triggers: [...(boat.triggers ?? []), trigger]
     })
+  },
+  fetchObstacle: async ({ _id }) => {
+    const obstacle = await Obstacle.one({ _id })
+    return {
+      ...obstacle,
+      content: await contentful.getEntry(obstacle.content_id)
+    }
+  },
+  overcome: async ({ obstacle_id }) => {
+    const obstacle = await Obstacle.one({ _id: obstacle_id })
+    Boat.updateOne({ _id: obstacle.boat_id }, { current_obstacle_id: undefined })
   }
 }
 
