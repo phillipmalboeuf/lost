@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { ink, sand } from '../settings/colors'
 import { text } from '../settings/sizes'
 
@@ -11,12 +11,20 @@ const Div = styled.div`
   padding: ${text[1]};
   border: none;
   border-radius: ${text[2]};
+  ${({ z }) => z && css`
+    position: relative;
+    z-index: ${z}; 
+  `}
+  ${({ wide }) => wide && css`
+    width: 66ch;
+  `}
 `
 
 export const Card: FunctionComponent<{
-  
-}> = ({ children }) => {
-  return <Div>
+  z?: number
+  wide?: boolean
+}> = ({ children, z, wide }) => {
+  return <Div z={z} wide={wide}>
     {children}
   </Div>
 }

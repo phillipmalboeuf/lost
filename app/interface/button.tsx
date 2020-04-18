@@ -20,6 +20,12 @@ const Sutton = styled.button<{ transparent?: boolean }>`
     background: none;
   `}
 
+  ${props => props.disabled && css`
+    text-decoration: line-through;
+    background: ${ink[1]};
+    opacity: 0.33;
+  `}
+
   &:active {
     transform: scale(0.96);
   }
@@ -28,9 +34,10 @@ const Sutton = styled.button<{ transparent?: boolean }>`
 export const Button: FunctionComponent<{
   to?: string
   transparent?: boolean
+  disabled?: boolean
   onClick?: () => void | Promise<void>
-}> = ({ children, onClick, transparent }) => {
-  return <Sutton onClick={onClick} transparent={transparent}>
+}> = ({ children, onClick, transparent, disabled }) => {
+  return <Sutton onClick={onClick} transparent={transparent} disabled={disabled}>
     {children}
   </Sutton>
 }

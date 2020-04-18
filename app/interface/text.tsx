@@ -16,3 +16,13 @@ export const Subtitle = styled.h3`
   line-height: 1;
   margin: 0;
 `
+
+export const Paragraph = styled.p`
+  font-size: ${text[1]};
+  line-height: 1.33;
+  margin: ${text[1]} 0;
+
+  &:first-child {
+    margin-top: 0;
+  }
+`

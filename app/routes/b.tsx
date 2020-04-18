@@ -1,5 +1,4 @@
 import React, { useState, Fragment, useEffect, useContext } from 'react'
-import styled from 'styled-components'
 import type { FunctionComponent } from 'react'
 import type { RouteComponentProps } from 'react-router-dom'
 import type { Entry } from 'contentful'
@@ -11,38 +10,21 @@ import { useEvent, send, on, off } from '../socket'
 
 import type { BoatDocument } from '../../server/models/boat'
 import type { Stats, CrewDocument } from '../../server/models/crew'
-import type { ObstacleDocument } from '../../server/models/obstacle'
+import { ObstacleDocument } from '../../server/models/obstacle'
 import type { Position } from '../../server/models/map'
 
 import { Card } from '../interface/card'
 import { Button } from '../interface/button'
 import { Overlay } from '../interface/overlay'
-import { text } from '../settings/sizes'
-import { ink } from '../settings/colors'
-import { Title, Subtitle } from '../interface/text'
+import { Title, Subtitle, Paragraph } from '../interface/text'
 import { Input } from '../interface/input'
+import { List, ListItem } from '../interface/list'
+import { Obstacle } from '../interface/obstacle'
 
 
-const List = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`
-
-const ListItem = styled.li`
-  cursor: pointer;
-  font-size: ${text[1]};
-  padding: ${text[1]} 0;
-  border-bottom: 2px solid ${ink[0]};
-
-  &:last-child {
-    margin-bottom: ${text[1]};
-  }
-`
-
-function stats(current: Stats, base?: Stats) {
+function stats(current: Stats, base?: Stats, onContribute?: (stat: string, value: number) => void) {
   return base
-  ? <>B: {current.bravery} / {base.bravery}, I: {current.intelligence} / {base.intelligence}, C: {current.charm} / {base.charm}, D: {current.dexterity} / {base.dexterity} </>
+  ? <>B: {onContribute ? <Button transparent onClick={() => onContribute('bravery', 1)}>{current.bravery}</Button> : current.bravery} / {base.bravery}, I: {onContribute ? <Button transparent onClick={() => onContribute('intelligence', 1)}>{current.intelligence}</Button> : current.intelligence} / {base.intelligence}, C: {onContribute ? <Button transparent onClick={() => onContribute('charm', 1)}>{current.charm}</Button> : current.charm} / {base.charm}, D: {onContribute ? <Button transparent onClick={() => onContribute('dexterity', 1)}>{current.dexterity}</Button> : current.dexterity} / {base.dexterity} </>
   : <>B: {current.bravery}, I: {current.intelligence}, C: {current.charm}, D: {current.dexterity}</>
 }
 
@@ -56,7 +38,6 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
   const crewList = useEvent<Entry<{ title: string, bio: string } & Stats>[]>('listCrewMembers')
 
   const [direction, setDirection] = useState(0)
-  const [obstacle, setObstacle] = useState<ObstacleDocument>()
   const [adding, setAdding] = useState(false)
   const [pick, setPick] = useState<string>()
 
@@ -73,10 +54,6 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
   function newCrew(name: string, content_id: string, boat_id: string) {
     send('newCrew', { name, content_id, boat_id })
   }
-
-  useEffect(() => {
-    on('fetchObstacle', ({ detail }) => setObstacle(detail))
-  }, [])
 
   useEffect(() => {
     svg.addEventListener('pointermove', direct)
@@ -112,11 +89,11 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
       }
     }, [boat.position, direction])
 
-    useEffect(() => {
-      if (boat.current_obstacle_id) {
-        send('fetchObstacle', { _id: boat.current_obstacle_id })
-      }
-    }, [boat.current_obstacle_id])
+    // useEffect(() => {
+    //   if (boat.current_obstacle_id) {
+    //     send('fetchObstacle', { _id: boat.current_obstacle_id })
+    //   }
+    // }, [boat.current_obstacle_id])
   }
 
   function onward(event: Event) {
@@ -130,27 +107,31 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
     }
   }
 
+  function contribute(crew_id: string) {
+    return (stat: string, value: number) =>
+      send('contribute', { obstacle_id: boat.current_obstacle_id, crew_id, stat, value })
+  }
+
   function overcome() {
-    setObstacle(undefined)
-    send('overcome', { obstacle_id: obstacle._id })
+    send('overcome', { obstacle_id: boat.current_obstacle_id })
   }
 
   return boat && <>
     <Boat speed={400} direction={direction} />
     <div style={{ position: 'relative', zIndex: 1 }}>
       <h2>{boat.name}</h2>
-      <Card>
+      <Card z={2}>
         <List>
           {crew && crewList && crew.map(member => ({
             ...member,
             content: crewList.find(c => c.sys.id === member.content_id)
           })).map(member => <ListItem key={member._id}>
             <Subtitle>{member.name} – {member.content.fields.title}</Subtitle>
-            {stats(member, member.content.fields)}
+            {stats(member, member.content.fields, boat.current_obstacle_id && contribute(member._id))}
           </ListItem>)}
         </List>
             
-        <Button onClick={() => setAdding(true)}>+ Add a Crew Member</Button>
+        {!boat.triggers && <Button onClick={() => setAdding(true)}>+ Add a Crew Member</Button>}
         {adding && <Overlay>
           <Card>
             {crewList && !pick && <List>
@@ -163,7 +144,7 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
               <Button transparent onClick={() => setPick(undefined)}>← Pick a different crew member</Button>
               {crewList.filter(member => member.sys.id === pick).map(member => <Fragment key={member.sys.id}>
                 <Title>{member.fields.title}</Title>
-                <p>{member.fields.bio}</p>
+                <Paragraph>{member.fields.bio}</Paragraph>
 
                 <form onSubmit={e => {
                   e.preventDefault()
@@ -180,13 +161,8 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
         </Overlay>}
       </Card>
 
-      {!moving && boat.current_obstacle_id && obstacle && <Overlay>
-        <Card>
-          <h1>{obstacle.content.fields.title}</h1>
-          <p>{obstacle.content.fields.description}</p>
-          <Button onClick={overcome}>{obstacle.content.fields.overcome}</Button>
-        </Card>
-      </Overlay>}
+      {!moving && boat.current_obstacle_id
+        && <Obstacle _id={boat.current_obstacle_id} onOvercome={overcome} crew={crew} />}
       {/* {boat && <div>
         <small>{boat.position.lat} {boat.position.lng}</small>
       </div>} */}

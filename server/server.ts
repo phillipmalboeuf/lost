@@ -90,12 +90,32 @@ const events = {
       triggers: [...(boat.triggers ?? []), trigger]
     })
   },
-  fetchObstacle: async ({ _id }) => {
+  watchObstacle: async ({ _id }, ws: WebSocket) => {
     const obstacle = await Obstacle.one({ _id })
+
+    Obstacle.watch({ 'documentKey._id': _id }).then(stream => {
+      stream.on('change', async (change) => {
+        ws.send(json.encode({
+          event: 'watchObstacle',
+          body: change.fullDocument
+        }))
+      })
+
+      ws.onclose = () => stream.close()
+    })
+
     return {
       ...obstacle,
       content: await contentful.getEntry(obstacle.content_id)
     }
+  },
+  fetchObstacleContent: async ({ _id }) => {
+    const obstacle = await Obstacle.one({ _id })
+    return contentful.getEntry(obstacle.content_id)
+  },
+  contribute: async ({ obstacle_id, crew_id, stat, value }) => {
+    Obstacle.updateOne({ _id: obstacle_id }, { [`contributions.${crew_id}.${stat}`]: value }, '$inc')
+    Crew.updateOne({ _id: crew_id }, { [stat]: -value }, '$inc')
   },
   overcome: async ({ obstacle_id }) => {
     const obstacle = await Obstacle.one({ _id: obstacle_id })

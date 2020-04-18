@@ -4,6 +4,7 @@ import { ink, sand } from '../settings/colors'
 import { text } from '../settings/sizes'
 
 const Wrapper = styled.div`
+  pointer-events: auto;
   position: fixed;
   top: 0;
   left: 0;
@@ -27,7 +28,7 @@ const Back = styled.div`
 
 const Content = styled.div`
   position: relative;
-  zIndex: 1;
+  z-index: 1;
   max-height: 100%;
   overflow: auto;
 `

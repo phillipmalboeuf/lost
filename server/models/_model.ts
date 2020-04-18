@@ -53,9 +53,9 @@ export const createModel = <T, F = { _id: string }>(
       }).then(result => ({ _id: result.insertedId as string }))
     },
 
-    updateOne: async (filters: FilterQuery<F>, data: any) => {
+    updateOne: async (filters: FilterQuery<F>, data: any, method = '$set') => {
       return database.collection(name).findOneAndUpdate(filters, {
-        '$set': await processes.preprocess(data)
+        [method]: await processes.preprocess(data)
       }, { returnOriginal: false }).then(result => processes.postprocess(result.value))
     },
 
