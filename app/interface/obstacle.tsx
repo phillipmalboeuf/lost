@@ -11,6 +11,7 @@ import { Button } from './button'
 import { Title, Subtitle, Paragraph } from './text'
 import { Flex, OneThird, TwoThirds } from './flex'
 import { List, ListItem } from './list'
+import { Entry } from 'contentful'
 
 export const Obstacle: FunctionComponent<{
   _id: string
@@ -19,7 +20,7 @@ export const Obstacle: FunctionComponent<{
 }> = ({ _id, onOvercome, crew }) => {
 
   const obstacle = useEvent<ObstacleDocument>('watchObstacle', { _id })
-  const content = useEvent<ObstacleContent>('fetchObstacleContent', { _id })
+  const content = useEvent<Entry<ObstacleContent>>('fetchObstacleContent', { _id })
 
   const totals = Object.entries((obstacle && obstacle.contributions) || []).reduce((t, [crew_id, stats]) => {
     Object.entries(stats).forEach(([stat, value]) => {
@@ -74,6 +75,7 @@ export const Obstacle: FunctionComponent<{
           C: {content.fields.charm}<br />
           D: {content.fields.dexterity}<br />
           {content.fields.alternateOvercome && <>
+          <br />
           <Subtitle>{content.fields.alternateOvercome}</Subtitle>
           B: {content.fields.alternate_bravery}<br />
           I: {content.fields.alternate_intelligence}<br />
@@ -98,7 +100,7 @@ export const Obstacle: FunctionComponent<{
               return <Button onClick={onOvercome}>{content.fields.overcome}</Button>
             }
 
-            if (alternateOvercame.bravery && alternateOvercame.intelligence && alternateOvercame.charm && alternateOvercame.dexterity) {
+            if (content.fields.alternateOvercome && alternateOvercame.bravery && alternateOvercame.intelligence && alternateOvercame.charm && alternateOvercame.dexterity) {
               return <Button onClick={onOvercome}>{content.fields.alternateOvercome}</Button>
             }
 

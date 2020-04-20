@@ -2,10 +2,12 @@
 import { createModel, ModelDocument } from './_model'
 import { Entry } from 'contentful'
 
-export interface ObstacleContent extends Entry<{
+export interface ObstacleContent {
   title: string
   description: string
+  loseSleep: boolean
   overcome: string
+  money: number
   bravery: number
   intelligence: number
   charm: number
@@ -15,7 +17,7 @@ export interface ObstacleContent extends Entry<{
   alternate_intelligence: number
   alternate_charm: number
   alternate_dexterity: number
-}> {}
+}
 
 export interface ObstacleDocument extends ModelDocument {
   boat_id: string

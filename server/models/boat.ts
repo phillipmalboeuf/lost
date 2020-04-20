@@ -8,6 +8,7 @@ export interface BoatDocument extends ModelDocument {
   name: string
   position: Position
   current_obstacle_id: string
+  gold: number
   map: MapDocument
   home: IslandDocument
   // players: PlayerDocument[]

@@ -11,6 +11,7 @@ export interface Stats {
 export interface CrewDocument extends Stats, ModelDocument {
   content_id: string
   name: string
+  slept: number
 }
 
 export const Crew = createModel<CrewDocument>('crew', null, null, { 'created_at': 1 })

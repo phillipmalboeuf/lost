@@ -59,6 +59,12 @@ export const createModel = <T, F = { _id: string }>(
       }, { returnOriginal: false }).then(result => processes.postprocess(result.value))
     },
 
+    updateMany: async (filters: FilterQuery<F>, data: any, method = '$set') => {
+      return database.collection(name).updateMany(filters, {
+        [method]: await processes.preprocess(data)
+      }).then(result => result.result)
+    },
+
     destroyOne: async (filters: FilterQuery<F>) => {
       return database.collection(name).deleteOne(filters)
         .then(result => ({ deleted: result.result.n }))
