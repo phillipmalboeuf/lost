@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useRef, useEffect, createContext, useState, Component } from 'react'
 import { Illustration, Ellipse, Cylinder, Hemisphere, TAU, Dragger, Vector, Anchor } from 'zdog'
 import anime from 'animejs'
+import hotkeys from 'hotkeys-js'
 
 import { water } from '../settings/colors'
 import { Compass } from './compass'
@@ -23,6 +24,7 @@ interface State {
   illo?: Illustration
   anchor?: Anchor
   rotation: number
+  zoom: number
   moving: boolean
 }
 
@@ -31,6 +33,7 @@ export class Map extends Component<Props, State> {
   canvas: HTMLCanvasElement
   state: State = {
     rotation: -TAU/4,
+    zoom: 0.25,
     moving: false
   }
 
@@ -49,6 +52,32 @@ export class Map extends Component<Props, State> {
     this.setState({
       illo,
       anchor
+    })
+
+    hotkeys('-', this.zoomOut.bind(this))
+    hotkeys('=', this.zoomIn.bind(this))
+  }
+
+  zoomIn() {
+    console.log('in')
+    anime({
+      targets: this.state.illo,
+      zoom: this.state.illo.zoom * 1.2,
+      easing: 'easeOutQuad',
+      update: () => {
+        requestAnimationFrame(() => this.state.illo.updateRenderGraph())
+      }
+    })
+  }
+
+  zoomOut() {
+    anime({
+      targets: this.state.illo,
+      zoom: this.state.illo.zoom * 0.8,
+      easing: 'easeOutQuad',
+      update: () => {
+        requestAnimationFrame(() => this.state.illo.updateRenderGraph())
+      }
     })
   }
 
