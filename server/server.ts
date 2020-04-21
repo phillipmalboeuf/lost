@@ -77,23 +77,23 @@ const events = {
     return (await contentful.getEntries({ content_type: 'crewMember' })).items
   },
   onward: async ({ position, boat_id }) => {
-    // const trigger = Math.round(Math.random() * 12) + 1
+    const trigger = Math.round(Math.random() * 12) + 1
 
-    // const [boat, content] = await Promise.all([
-    //   Boat.one({ _id: boat_id }),
-    //   contentful.getEntries({ content_type: 'obstacle', 'fields.trigger': trigger })
-    // ])
+    const [boat, content] = await Promise.all([
+      Boat.one({ _id: boat_id }),
+      contentful.getEntries({ content_type: 'obstacle', 'fields.trigger': trigger })
+    ])
     
-    // const obstacle = await Obstacle.createOne({
-    //   boat_id,
-    //   trigger,
-    //   content_id: content.items[0].sys.id
-    // })
+    const obstacle = await Obstacle.createOne({
+      boat_id,
+      trigger,
+      content_id: content.items[0].sys.id
+    })
 
     return Boat.updateOne({ _id: boat_id }, {
       position,
-      // current_obstacle_id: obstacle._id,
-      // triggers: [...(boat.triggers ?? []), trigger]
+      current_obstacle_id: obstacle._id,
+      triggers: [...(boat.triggers ?? []), trigger]
     })
   },
   watchObstacle: async ({ _id }, ws: WebSocket) => {
@@ -145,8 +145,6 @@ const events = {
 }
 
 wss.on('connection', function connection(ws) {
-  console.log(wss.clients.size)
-  
   async function incoming(message) {
     const { event, body } = json.decode(message)
     const response = await events[event](body, ws)

@@ -59,7 +59,6 @@ export class Map extends Component<Props, State> {
   }
 
   zoomIn() {
-    console.log('in')
     anime({
       targets: this.state.illo,
       zoom: this.state.illo.zoom * 1.2,

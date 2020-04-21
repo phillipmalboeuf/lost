@@ -53,9 +53,9 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
     }, [])
 
     useEffect(() => {
-      // if (boat.current_obstacle_id) {
+      if (boat.current_obstacle_id) {
         move(boat.position)
-      // }
+      }
     }, [boat.position])
 
     useEffect(() => {
