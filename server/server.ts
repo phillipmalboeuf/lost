@@ -27,11 +27,17 @@ const wss = new WebSocket.Server({
 
 const events = {
   newMap: async () => {
-    return await Map.createOne({})
+    return await Map.createOne({
+      distance: 60000,
+      island_count: 30
+    })
+  },
+  fetchMap: async ({ _id }) => {
+    return Map.one({ _id })
   },
   newBoat: async ({ name, map_id }) => {
     return {
-      ...await Boat.createOne({ name, map_id, gold: 5 }),
+      ...await Boat.createOne({ name, map_id, gold: 5, position: { lat: 0, lng: 0 } }),
       map_id
     }
   },
@@ -44,7 +50,7 @@ const events = {
         }))
       })
 
-      ws.onclose = () => stream.close()
+      ws.on('close', () => stream.close())
     })
 
     return Boat.one({ _id })
@@ -58,7 +64,7 @@ const events = {
         }))
       })
 
-      ws.onclose = () => stream.close()
+      ws.on('close', () => stream.close())
     })
 
     return Crew.list({ boat_id })
@@ -71,23 +77,23 @@ const events = {
     return (await contentful.getEntries({ content_type: 'crewMember' })).items
   },
   onward: async ({ position, boat_id }) => {
-    const trigger = Math.round(Math.random() * 12) + 1
+    // const trigger = Math.round(Math.random() * 12) + 1
 
-    const [boat, content] = await Promise.all([
-      Boat.one({ _id: boat_id }),
-      contentful.getEntries({ content_type: 'obstacle', 'fields.trigger': trigger })
-    ])
+    // const [boat, content] = await Promise.all([
+    //   Boat.one({ _id: boat_id }),
+    //   contentful.getEntries({ content_type: 'obstacle', 'fields.trigger': trigger })
+    // ])
     
-    const obstacle = await Obstacle.createOne({
-      boat_id,
-      trigger,
-      content_id: content.items[0].sys.id
-    })
+    // const obstacle = await Obstacle.createOne({
+    //   boat_id,
+    //   trigger,
+    //   content_id: content.items[0].sys.id
+    // })
 
     return Boat.updateOne({ _id: boat_id }, {
       position,
-      current_obstacle_id: obstacle._id,
-      triggers: [...(boat.triggers ?? []), trigger]
+      // current_obstacle_id: obstacle._id,
+      // triggers: [...(boat.triggers ?? []), trigger]
     })
   },
   watchObstacle: async ({ _id }, ws: WebSocket) => {
@@ -101,7 +107,7 @@ const events = {
         }))
       })
 
-      ws.onclose = () => stream.close()
+      ws.on('close', () => stream.close())
     })
 
     return {
@@ -138,13 +144,22 @@ const events = {
   }
 }
 
-wss.on('connection', function connection(ws) {  
-  ws.on('message', async function incoming(message) {
+wss.on('connection', function connection(ws) {
+  console.log(wss.clients.size)
+  
+  async function incoming(message) {
     const { event, body } = json.decode(message)
     const response = await events[event](body, ws)
     ws.send(json.encode({
       event,
       body: response
     }))
+  }
+
+  ws.on('message', incoming)
+
+  ws.on('close', () => {
+    console.log('close')
+    ws.off('message', incoming)
   })
 })

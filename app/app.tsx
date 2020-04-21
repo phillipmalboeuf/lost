@@ -31,7 +31,7 @@ const history = createBrowserHistory()
 const App: FunctionComponent<{}> = () => {
 
   useEffect(() => {
-    on('newMap', ({ detail }) => history.replace(`/m/${detail._id}`))
+    on('newMap', ({ detail }) => history.push(`/m/${detail._id}`))
     on('newBoat', ({ detail }) => history.replace(`/m/${detail.map_id}/b/${detail._id}`))
   }, [])
 

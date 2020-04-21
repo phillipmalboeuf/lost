@@ -32,7 +32,7 @@ export class Boat extends Component<Props, State> {
       diameter: speed * 2,
       color: water[0],
       // fill: true,
-      stroke: 8,
+      stroke: 24 * illo.scale.x,
       rotate: { x: -TAU/4 },
     });
 
@@ -42,7 +42,7 @@ export class Boat extends Component<Props, State> {
       sides: 3,
       color: water[0],
       fill: true,
-      stroke: 8,
+      stroke: 24 * illo.scale.x,
       rotate: { x: -TAU/4, z: TAU/4 },
       translate: { x: speed - 66 }
     })
@@ -57,7 +57,7 @@ export class Boat extends Component<Props, State> {
         addTo: this.deck,
         radius: 50 + n,
         sides: 5,
-        stroke: 10,
+        stroke: 30 * illo.scale.x,
         color: wood[0],
         translate: { y: 10 - (n * 3) },
         rotate: { x: -TAU/4, z: TAU/4 },
@@ -102,7 +102,7 @@ export class Boat extends Component<Props, State> {
         addTo: this.sail,
         width: 133,
         height: 10,
-        stroke: 10,
+        stroke: 30 * illo.scale.x,
         color: sand[0],
         rotate: { y: -TAU/4 },
         translate: { y: (-(120 / a.length) * i) - 50, x: n + 33 },

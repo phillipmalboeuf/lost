@@ -39,7 +39,7 @@ export class Map extends Component<Props, State> {
       element: this.svg,
       // dragRotate: true,
       rotate: { x: -TAU/13 },
-      scale: 0.33,
+      scale: 0.05,
     })
 
     let anchor = new Anchor({
@@ -53,8 +53,10 @@ export class Map extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    this.state.illo.rotate.y = this.state.rotation
-    this.state.illo.updateRenderGraph()
+    requestAnimationFrame(() => {
+      this.state.illo.rotate.y = this.state.rotation
+      this.state.illo.updateRenderGraph()
+    })
   }
 
 
@@ -71,7 +73,7 @@ export class Map extends Component<Props, State> {
           z: -position.lat,
           easing: 'easeOutQuad',
           update: () => {
-            this.state.illo.updateRenderGraph()
+            requestAnimationFrame(() => this.state.illo.updateRenderGraph())
           },
           complete: () => {
             this.setState({ moving: false })

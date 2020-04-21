@@ -21,9 +21,10 @@ import { Input } from '../interface/input'
 import { List, ListItem } from '../interface/list'
 import { Obstacle } from '../interface/obstacle'
 import { Crew } from '../interface/crew'
+import { extendPosition } from '../../helpers/geometry'
 
 
-const speed = 400
+const speed = 4000
 
 export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props => {
   const { svg, move, moving, rotation } = useContext(MapContext)
@@ -52,9 +53,9 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
     }, [])
 
     useEffect(() => {
-      if (boat.current_obstacle_id) {
+      // if (boat.current_obstacle_id) {
         move(boat.position)
-      }
+      // }
     }, [boat.position])
 
     useEffect(() => {
@@ -72,10 +73,7 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
     event.preventDefault()
 
     if (!moving) {
-      send('onward', { position: {
-        lat: Math.round(boat.position.lat + (Math.sin(direction) * speed)),
-        lng: Math.round(boat.position.lng + (Math.cos(direction) * speed))
-      }, boat_id: props.match.params._id })
+      send('onward', { position: extendPosition(boat.position, direction, speed), boat_id: props.match.params._id })
     }
   }
 
@@ -84,7 +82,7 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
   }
 
   return boat && <>
-    <Boat speed={400} direction={direction} />
+    <Boat speed={speed} direction={direction} />
     <div style={{ position: 'relative', zIndex: 1 }}>
       <h2>{boat.name}<br />{boat.gold} gold</h2>
       

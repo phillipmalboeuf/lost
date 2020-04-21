@@ -48,6 +48,7 @@ export class Compass extends Component<Props, State> {
 
     let rotation: number
     this.svg.addEventListener('pointermove', event => {
+      event.preventDefault()
       if (this.state.down) {
         rotation = Math.atan2(event.offsetY - (this.svg.clientHeight/2), event.offsetX - (this.svg.clientWidth/2))
         this.props.onRotate(rotation)
