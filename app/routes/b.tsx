@@ -24,10 +24,10 @@ import { Crew } from '../interface/crew'
 import { extendPosition } from '../../helpers/geometry'
 
 
-const speed = 4000
+const speed = 400
 
 export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props => {
-  const { svg, move, moving, rotation } = useContext(MapContext)
+  const { canvas, move, moving, rotation } = useContext(MapContext)
 
   const boat = useEvent<BoatDocument>('watchBoat', { _id: props.match.params._id })
   const crew = useEvent<CrewDocument[]>('watchCrew', { boat_id: props.match.params._id })
@@ -35,9 +35,9 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
   const [direction, setDirection] = useState(0)
 
   useEffect(() => {
-    svg.addEventListener('pointermove', direct)
+    canvas.addEventListener('pointermove', direct)
     return () => {
-      svg.removeEventListener('pointermove', direct)
+      canvas.removeEventListener('pointermove', direct)
     }
   }, [rotation])
 
@@ -59,11 +59,11 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
     }, [boat.position])
 
     useEffect(() => {
-      svg.addEventListener('click', onward)
+      canvas.addEventListener('click', onward)
       hotkeys('space', onward)
 
       return () => {
-        svg.removeEventListener('click', onward)
+        canvas.removeEventListener('click', onward)
         hotkeys.unbind('space', onward)
       }
     }, [boat.position, direction])

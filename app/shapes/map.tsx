@@ -7,7 +7,7 @@ import { Compass } from './compass'
 import type { Position } from '../../server/models/map'
 
 export const MapContext = createContext({
-  svg: undefined as SVGSVGElement,
+  canvas: undefined as HTMLCanvasElement,
   illo: undefined as Illustration,
   anchor: undefined as Anchor,
   rotation: 0,
@@ -28,7 +28,7 @@ interface State {
 
 export class Map extends Component<Props, State> {
   
-  svg: SVGSVGElement
+  canvas: HTMLCanvasElement
   state: State = {
     rotation: -TAU/4,
     moving: false
@@ -36,10 +36,10 @@ export class Map extends Component<Props, State> {
 
   componentDidMount() {
     let illo = new Illustration({
-      element: this.svg,
+      element: this.canvas,
       // dragRotate: true,
       rotate: { x: -TAU/13 },
-      scale: 0.05,
+      zoom: 0.25,
     })
 
     let anchor = new Anchor({
@@ -88,12 +88,12 @@ export class Map extends Component<Props, State> {
   }
 
   render() {
-    const { svg, move } = this
+    const { canvas, move } = this
     const { illo, anchor, moving, rotation } = this.state
     const { children } = this.props
 
-    return <MapContext.Provider value={{ svg, illo, anchor, move: move.bind(this), moving, rotation }}>
-      <svg style={{ position: 'fixed', top: 0, left: 0, backgroundColor: water[1] }} ref={element => this.svg = element} width={window.innerWidth} height={window.innerHeight} />
+    return <MapContext.Provider value={{ canvas, illo, anchor, move: move.bind(this), moving, rotation }}>
+      <canvas style={{ position: 'fixed', top: 0, left: 0, backgroundColor: water[1] }} ref={element => this.canvas = element} width={window.innerWidth} height={window.innerHeight} />
       {illo && children}
       <Compass onRotate={rotation => this.setState({ rotation })} />
     </MapContext.Provider>

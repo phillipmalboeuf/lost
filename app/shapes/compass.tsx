@@ -13,7 +13,7 @@ interface State {
 export class Compass extends Component<Props, State> {
 
   
-  svg: SVGSVGElement
+  canvas: HTMLCanvasElement
   state: State = {
     down: false,
     rotation: -TAU/4
@@ -24,7 +24,7 @@ export class Compass extends Component<Props, State> {
 
   componentDidMount() {
     this.illo = new Illustration({
-      element: this.svg,
+      element: this.canvas,
       scale: 0.5
     })
 
@@ -47,16 +47,16 @@ export class Compass extends Component<Props, State> {
 
 
     let rotation: number
-    this.svg.addEventListener('pointermove', event => {
+    this.canvas.addEventListener('pointermove', event => {
       event.preventDefault()
       if (this.state.down) {
-        rotation = Math.atan2(event.offsetY - (this.svg.clientHeight/2), event.offsetX - (this.svg.clientWidth/2))
+        rotation = Math.atan2(event.offsetY - (this.canvas.clientHeight/2), event.offsetX - (this.canvas.clientWidth/2))
         this.props.onRotate(rotation)
         this.setState({ rotation })
       }
     })
 
-    this.svg.addEventListener('pointerdown', () => this.setState({ down: true }))
+    this.canvas.addEventListener('pointerdown', () => this.setState({ down: true }))
     window.addEventListener('pointerup', () => this.setState({ down: false }))
   }
 
@@ -69,6 +69,6 @@ export class Compass extends Component<Props, State> {
 
   render() {
 
-    return <svg style={{ position: 'fixed', bottom: '5vh', right: '5vw' }} ref={element => this.svg = element} width={window.innerWidth / 6} height={window.innerHeight / 6} />
+    return <canvas style={{ position: 'fixed', bottom: '5vh', right: '5vw' }} ref={element => this.canvas = element} width={window.innerWidth / 6} height={window.innerHeight / 6} />
   }
 }
