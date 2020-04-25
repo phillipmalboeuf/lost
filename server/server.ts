@@ -51,7 +51,7 @@ const events = {
         }))
       })
 
-      // ws.on('close', () => stream.close())
+      ws.on('close', () => stream.close())
     })
 
     return Boat.one({ _id })
@@ -65,7 +65,7 @@ const events = {
         }))
       })
 
-      // ws.on('close', () => stream.close())
+      ws.on('close', () => stream.close())
     })
 
     return Crew.list({ boat_id })
@@ -116,7 +116,7 @@ const events = {
         }))
       })
 
-      // ws.on('close', () => stream.close())
+      ws.on('close', () => stream.close())
     })
 
     return {
@@ -164,8 +164,6 @@ const events = {
 wss.on('connection', function connection(ws) {
   async function incoming(message) {
     const { event, body } = json.decode(message)
-    console.log(event, body)
-    
     const response = await events[event](body, ws)
     ws.send(json.encode({
       event,
@@ -175,7 +173,7 @@ wss.on('connection', function connection(ws) {
 
   ws.on('message', incoming)
 
-  // ws.on('close', () => {
-  //   ws.off('message', incoming)
-  // })
+  ws.on('close', () => {
+    ws.off('message', incoming)
+  })
 })
