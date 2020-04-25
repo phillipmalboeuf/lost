@@ -6,3 +6,7 @@ export function extendPosition(position: Position, direction: number, length: nu
     lng: Math.round(position.lng + (Math.cos(direction) * length))
   }
 }
+
+export function distanceBetween(a: Position, b: Position): number {
+  return Math.hypot(a.lat - b.lat, a.lng - b.lng)
+} 

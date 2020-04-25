@@ -9,6 +9,7 @@ export interface Stats {
 }
 
 export interface CrewDocument extends Stats, ModelDocument {
+  boat_id: string
   content_id: string
   name: string
   slept: number

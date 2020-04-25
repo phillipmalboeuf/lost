@@ -5,9 +5,11 @@ import { PlayerDocument } from './player'
 import { CrewDocument } from './crew'
 
 export interface BoatDocument extends ModelDocument {
+  map_id: string
   name: string
   position: Position
   current_obstacle_id: string
+  at_port: boolean
   gold: number
   map: MapDocument
   home: IslandDocument

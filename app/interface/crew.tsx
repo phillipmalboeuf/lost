@@ -56,6 +56,11 @@ export const Crew: FunctionComponent<{
       send('recover', { crew_id, stat })
   }
 
+  function buy(crew_id: string) {
+    return (stat: string) =>
+      send('buy', { crew_id, stat })
+  }
+  
   return <Card z={2}>
     <List>
       {crew && crewList && crew.map(member => ({
@@ -65,11 +70,13 @@ export const Crew: FunctionComponent<{
         <Subtitle>{member.name} – {member.content.fields.title}</Subtitle>
         {stats(member, member.content.fields, boat.current_obstacle_id
           ? contribute(member._id)
-          : member.slept ? recover(member._id) : undefined)}
+          : boat.at_port
+            ? buy(member._id)
+            : member.slept ? recover(member._id) : undefined)}
       </ListItem>)}
     </List>
         
-    {!boat.triggers && <Button onClick={() => setAdding(true)}>+ Add a Crew Member</Button>}
+    {crew && (!crew.length || !boat.triggers) && <Button onClick={() => setAdding(true)}>+ Add a Crew Member</Button>}
     {adding && <Overlay>
       <Card>
         {crewList && !pick && <List>

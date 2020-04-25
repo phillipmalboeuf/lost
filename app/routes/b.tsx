@@ -13,18 +13,13 @@ import type { Stats, CrewDocument } from '../../server/models/crew'
 import { ObstacleDocument } from '../../server/models/obstacle'
 import type { Position } from '../../server/models/map'
 
-import { Card } from '../interface/card'
-import { Button } from '../interface/button'
-import { Overlay } from '../interface/overlay'
-import { Title, Subtitle, Paragraph } from '../interface/text'
-import { Input } from '../interface/input'
-import { List, ListItem } from '../interface/list'
 import { Obstacle } from '../interface/obstacle'
 import { Crew } from '../interface/crew'
 import { extendPosition } from '../../helpers/geometry'
+import { Port } from '../interface/port'
 
 
-const speed = 400
+const speed = 666
 
 export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props => {
   const { canvas, move, moving, rotation } = useContext(MapContext)
@@ -53,10 +48,10 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
     }, [])
 
     useEffect(() => {
-      if (boat.current_obstacle_id) {
+      if (boat.current_obstacle_id || boat.at_port) {
         move(boat.position)
       }
-    }, [boat.position])
+    }, [boat.position.lat, boat.position.lng])
 
     useEffect(() => {
       canvas.addEventListener('click', onward)
@@ -81,6 +76,10 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
     send('overcome', { obstacle_id: boat.current_obstacle_id })
   }
 
+  function leavePort() {
+    send('leavePort', { boat_id: boat._id })
+  }
+
   return boat && <>
     <Boat speed={speed} direction={direction} />
     <div style={{ position: 'relative', zIndex: 1 }}>
@@ -90,6 +89,9 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
 
       {!moving && boat.current_obstacle_id
         && <Obstacle _id={boat.current_obstacle_id} onOvercome={overcome} crew={crew} />}
+
+      {!moving && boat.at_port
+        && <Port onFinish={leavePort} boat={boat} crew={crew} />}
 
       {/* {boat && <div>
         <small>{boat.position.lat} {boat.position.lng}</small>

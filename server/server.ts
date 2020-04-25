@@ -8,6 +8,7 @@ import { Boat } from './models/boat'
 import { Map } from './models/map'
 import { Crew, Stats } from './models/crew'
 import { Obstacle, ObstacleContent } from './models/obstacle'
+import { distanceBetween } from '../helpers/geometry'
 
 
 // polka()
@@ -50,7 +51,7 @@ const events = {
         }))
       })
 
-      ws.on('close', () => stream.close())
+      // ws.on('close', () => stream.close())
     })
 
     return Boat.one({ _id })
@@ -64,7 +65,7 @@ const events = {
         }))
       })
 
-      ws.on('close', () => stream.close())
+      // ws.on('close', () => stream.close())
     })
 
     return Crew.list({ boat_id })
@@ -83,16 +84,24 @@ const events = {
       Boat.one({ _id: boat_id }),
       contentful.getEntries({ content_type: 'obstacle', 'fields.trigger': trigger })
     ])
+
+    const map = await Map.one({ _id: boat.map_id })
     
-    const obstacle = await Obstacle.createOne({
-      boat_id,
-      trigger,
-      content_id: content.items[0].sys.id
-    })
+    let at_port = false
+    if (!boat.at_port) {
+      at_port = !!map.islands.filter(island => island.port).find(island => {
+        return distanceBetween(position, island.position) < 1000
+      })
+    }
 
     return Boat.updateOne({ _id: boat_id }, {
       position,
-      current_obstacle_id: obstacle._id,
+      at_port,
+      current_obstacle_id: !at_port ? (await Obstacle.createOne({
+        boat_id,
+        trigger,
+        content_id: content.items[0].sys.id
+      }))._id : undefined,
       triggers: [...(boat.triggers ?? []), trigger]
     })
   },
@@ -107,7 +116,7 @@ const events = {
         }))
       })
 
-      ws.on('close', () => stream.close())
+      // ws.on('close', () => stream.close())
     })
 
     return {
@@ -121,7 +130,7 @@ const events = {
   },
   contribute: async ({ obstacle_id, crew_id, stat }) => {
     Obstacle.updateOne({ _id: obstacle_id }, { [`contributions.${crew_id}.${stat}`]: 1 }, '$inc')
-    Crew.updateOne({ _id: crew_id }, { [stat]: -1 }, '$inc')
+    return Crew.updateOne({ _id: crew_id }, { [stat]: -1 }, '$inc')
   },
   overcome: async ({ obstacle_id }) => {
     const obstacle = await Obstacle.one({ _id: obstacle_id })
@@ -137,16 +146,26 @@ const events = {
       Crew.updateMany({ boat_id: obstacle.boat_id }, { slept: 1 })
     }
 
-    Boat.updateOne({ _id: obstacle.boat_id }, { current_obstacle_id: undefined })
+    return Boat.updateOne({ _id: obstacle.boat_id }, { current_obstacle_id: undefined })
   },
   recover: async ({ crew_id, stat }) => {
     return Crew.updateOne({ _id: crew_id }, { [stat]: 1, slept: -1 }, '$inc')
-  }
+  },
+  buy: async ({ crew_id, stat }) => {
+    const member = await Crew.updateOne({ _id: crew_id }, { [stat]: 1 }, '$inc')
+    Boat.updateOne({ _id: member.boat_id }, { gold: -1 }, '$inc')
+    return member
+  },
+  leavePort: async ({ boat_id }) => {
+    return Boat.updateOne({ _id: boat_id }, { at_port: false })
+  },
 }
 
 wss.on('connection', function connection(ws) {
   async function incoming(message) {
     const { event, body } = json.decode(message)
+    console.log(event, body)
+    
     const response = await events[event](body, ws)
     ws.send(json.encode({
       event,
@@ -156,8 +175,7 @@ wss.on('connection', function connection(ws) {
 
   ws.on('message', incoming)
 
-  ws.on('close', () => {
-    console.log('close')
-    ws.off('message', incoming)
-  })
+  // ws.on('close', () => {
+  //   ws.off('message', incoming)
+  // })
 })

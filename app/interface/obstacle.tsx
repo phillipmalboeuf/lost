@@ -104,7 +104,7 @@ export const Obstacle: FunctionComponent<{
               return <Button onClick={onOvercome}>{content.fields.alternateOvercome}</Button>
             }
 
-            return <Button disabled>Overcome</Button>
+            return <Button disabled={false} onClick={onOvercome}>Overcome</Button>
           }()}
         </TwoThirds>
       </Flex>
