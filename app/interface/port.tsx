@@ -16,9 +16,8 @@ import { BoatDocument } from '../../server/models/boat'
 
 export const Port: FunctionComponent<{
   boat: BoatDocument
-  crew: CrewDocument[]
   onFinish: () => void
-}> = ({ onFinish, boat, crew }) => {
+}> = ({ onFinish, boat }) => {
 
   return <Overlay>
     <Card wide>

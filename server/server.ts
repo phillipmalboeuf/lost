@@ -1,4 +1,4 @@
-import polka from 'polka'
+
 import WebSocket, { Server, LostSocket } from 'ws'
 import json from 'json-complete'
 
@@ -18,15 +18,6 @@ declare module 'ws' {
     obstacle: string
   }
 }
-
-// polka()
-//   .get('/', (req, res) => {
-//     res.end('Lost at Sea')
-//   }).listen(8089, err => {
-//     if (err) throw err
-//     console.log(`> Running on localhost:8089`)
-//   })
-
 
 const wss = new Server({
   port: 8088
@@ -66,8 +57,8 @@ Crew.watch({ }).then(stream => {
     wss.clients.forEach(async (ws: LostSocket) => {
       if (ws.boat === change.fullDocument.boat_id) {
         ws.send(json.encode({
-          event: 'watchCrew',
-          body: await Crew.list({ boat_id: change.fullDocument.boat_id })
+          event: 'watchCrewMember',
+          body: change.fullDocument
         }))
       }
     })
@@ -94,7 +85,7 @@ const events = {
     ws.boat = _id
     return Boat.one({ _id })
   },
-  watchCrew: async ({ boat_id }, ws: WebSocket) => {
+  fetchCrew: async ({ boat_id }, ws: WebSocket) => {
     return Crew.list({ boat_id })
   },
   newCrew: async ({ name, content_id, boat_id }) => {

@@ -25,7 +25,7 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
   const { canvas, move, moving, rotation } = useContext(MapContext)
 
   const boat = useEvent<BoatDocument>('watchBoat', { _id: props.match.params._id })
-  const crew = useEvent<CrewDocument[]>('watchCrew', { boat_id: props.match.params._id })
+  const crew = useCrew(props.match.params._id)
 
   const [direction, setDirection] = useState(0)
 
@@ -91,11 +91,35 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
         && <Obstacle _id={boat.current_obstacle_id} onOvercome={overcome} crew={crew} />}
 
       {!moving && boat.at_port
-        && <Port onFinish={leavePort} boat={boat} crew={crew} />}
-
-      {/* {boat && <div>
-        <small>{boat.position.lat} {boat.position.lng}</small>
-      </div>} */}
+        && <Port onFinish={leavePort} boat={boat} />}
     </div>
   </>
+}
+
+export function useCrew(boat_id: string) {
+  const [crew, setCrew] = useState<{[id: string]: CrewDocument}>()
+  const fetch = useEvent<CrewDocument[]>('fetchCrew', { boat_id })
+
+  function updateMember(e: CustomEvent<CrewDocument>) {
+    setCrew({
+      ...crew,
+      [e.detail._id]: e.detail
+    })
+  }
+
+  useEffect(() => {
+    if (fetch) {
+      setCrew(fetch.reduce((reduced, member) => {
+        return {
+          ...reduced,
+          [member._id]: member
+        }
+      }, {}))
+      
+      on('watchCrewMember', updateMember)
+      return () => off('watchCrewMember', updateMember)
+    }
+  }, [fetch])
+
+  return crew && Object.values(crew)
 }
