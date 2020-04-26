@@ -9,10 +9,6 @@ export interface ModelDocument {
   created_at: Date
 }
 
-
-let database: Db = undefined
-db().then(_ => database = _)
-
 export const createModel = <T, F = { _id: string }>(
   name: string,
   preprocess=async(data)=>data,
@@ -29,7 +25,7 @@ export const createModel = <T, F = { _id: string }>(
     ...processes,
     
     list: async (filters: FilterQuery<F>, limit=50, page=0, sort?: object) => {
-      return database.collection(name).find(filters, {
+      return (await db()).collection(name).find(filters, {
         limit,
         skip: limit ? page * limit : 0,
         sort: sort || defaultSort
@@ -38,15 +34,15 @@ export const createModel = <T, F = { _id: string }>(
     },
 
     count: async (filters: FilterQuery<F>) => {
-      return database.collection(name).countDocuments(filters)
+      return (await db()).collection(name).countDocuments(filters)
     },
 
     one: async (filters: FilterQuery<F>) => {
-      return database.collection(name).findOne(filters).then(processes.postprocess)
+      return (await db()).collection(name).findOne(filters).then(processes.postprocess)
     },
 
     createOne: async (data: any) => {
-      return database.collection(name).insertOne({
+      return (await db()).collection(name).insertOne({
         _id: nanoid(),
         created_at: new Date(),
         ...(await processes.preprocess(data))
@@ -54,28 +50,28 @@ export const createModel = <T, F = { _id: string }>(
     },
 
     updateOne: async (filters: FilterQuery<F>, data: any, method = '$set') => {
-      return database.collection(name).findOneAndUpdate(filters, {
+      return (await db()).collection(name).findOneAndUpdate(filters, {
         [method]: await processes.preprocess(data)
       }, { returnOriginal: false }).then(result => processes.postprocess(result.value))
     },
 
     updateMany: async (filters: FilterQuery<F>, data: any, method = '$set') => {
-      return database.collection(name).updateMany(filters, {
+      return (await db()).collection(name).updateMany(filters, {
         [method]: await processes.preprocess(data)
       }).then(result => result.result)
     },
 
     destroyOne: async (filters: FilterQuery<F>) => {
-      return database.collection(name).deleteOne(filters)
+      return (await db()).collection(name).deleteOne(filters)
         .then(result => ({ deleted: result.result.n }))
     },
 
     aggregate: async (pipeline: object[]) => {
-      return database.collection(name).aggregate(pipeline)
+      return (await db()).collection(name).aggregate(pipeline)
     },
 
     watch: async (filters: FilterQuery<F>) => {
-      return database.collection(name).watch([{ '$match': filters }], { fullDocument : 'updateLookup' })
+      return (await db()).collection(name).watch([{ '$match': filters }], { fullDocument : 'updateLookup' })
     }
   }
 }

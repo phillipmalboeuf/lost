@@ -1,7 +1,8 @@
 import polka from 'polka'
-import WebSocket from 'ws'
+import WebSocket, { Server, LostSocket } from 'ws'
 import json from 'json-complete'
 
+import { db } from './clients/mongo'
 import contentful from './clients/contentful'
 
 import { Boat } from './models/boat'
@@ -10,6 +11,13 @@ import { Crew, Stats } from './models/crew'
 import { Obstacle, ObstacleContent } from './models/obstacle'
 import { distanceBetween } from '../helpers/geometry'
 
+
+declare module 'ws' {
+  type LostSocket = WebSocket & {
+    boat: string
+    obstacle: string
+  }
+}
 
 // polka()
 //   .get('/', (req, res) => {
@@ -20,10 +28,50 @@ import { distanceBetween } from '../helpers/geometry'
 //   })
 
 
-const wss = new WebSocket.Server({
+const wss = new Server({
   port: 8088
 }, () => {
   console.log(`> Running on localhost:8088`)
+})
+
+
+Boat.watch({ }).then(stream => {
+  stream.on('change', async (change) => {
+    wss.clients.forEach((ws: LostSocket) => {
+      if (ws.boat === change.documentKey._id) {
+        ws.send(json.encode({
+          event: 'watchBoat',
+          body: change.fullDocument
+        }))
+      }
+    })
+  })
+})
+
+Obstacle.watch({ }).then(stream => {
+  stream.on('change', async (change) => {
+    wss.clients.forEach((ws: LostSocket) => {
+      if (ws.obstacle === change.documentKey._id) {
+        ws.send(json.encode({
+          event: 'watchObstacle',
+          body: change.fullDocument
+        }))
+      }
+    })
+  })
+})
+
+Crew.watch({ }).then(stream => {
+  stream.on('change', async (change) => {
+    wss.clients.forEach(async (ws: LostSocket) => {
+      if (ws.boat === change.fullDocument.boat_id) {
+        ws.send(json.encode({
+          event: 'watchCrew',
+          body: await Crew.list({ boat_id: change.fullDocument.boat_id })
+        }))
+      }
+    })
+  })
 })
 
 const events = {
@@ -42,32 +90,11 @@ const events = {
       map_id
     }
   },
-  watchBoat: async ({ _id }, ws: WebSocket) => {
-    Boat.watch({ 'documentKey._id': _id }).then(stream => {
-      stream.on('change', async (change) => {
-        ws.send(json.encode({
-          event: 'watchBoat',
-          body: change.fullDocument
-        }))
-      })
-
-      ws.on('close', () => stream.close())
-    })
-
+  watchBoat: async ({ _id }, ws: LostSocket) => {
+    ws.boat = _id
     return Boat.one({ _id })
   },
   watchCrew: async ({ boat_id }, ws: WebSocket) => {
-    Crew.watch({ 'fullDocument.boat_id': boat_id }).then(stream => {
-      stream.on('change', async (change) => {
-        ws.send(json.encode({
-          event: 'watchCrew',
-          body: await Crew.list({ boat_id })
-        }))
-      })
-
-      ws.on('close', () => stream.close())
-    })
-
     return Crew.list({ boat_id })
   },
   newCrew: async ({ name, content_id, boat_id }) => {
@@ -94,7 +121,7 @@ const events = {
       })
     }
 
-    return Boat.updateOne({ _id: boat_id }, {
+    Boat.updateOne({ _id: boat_id }, {
       position,
       at_port,
       current_obstacle_id: !at_port ? (await Obstacle.createOne({
@@ -105,19 +132,9 @@ const events = {
       triggers: [...(boat.triggers ?? []), trigger]
     })
   },
-  watchObstacle: async ({ _id }, ws: WebSocket) => {
+  watchObstacle: async ({ _id }, ws: LostSocket) => {
+    ws.obstacle = _id
     const obstacle = await Obstacle.one({ _id })
-
-    Obstacle.watch({ 'documentKey._id': _id }).then(stream => {
-      stream.on('change', async (change) => {
-        ws.send(json.encode({
-          event: 'watchObstacle',
-          body: change.fullDocument
-        }))
-      })
-
-      ws.on('close', () => stream.close())
-    })
 
     return {
       ...obstacle,

@@ -9,7 +9,7 @@ ws.onopen = function connected() {
 
 ws.onmessage = function incoming({ data }) {
   const { event, body } = json.decode(data)
-  // console.log(event, body)
+  console.log(event, body)
   ws.dispatchEvent(new CustomEvent(event, { detail: body }))
 }
 
@@ -42,7 +42,6 @@ export function useEvent<T>(event: string, body?: object) {
 
   useEffect(() => {
     if (ws.readyState) {
-      console.log('sending', event, body)
       send(event, body)
       on(event, respond)
       return () => off(event, respond)
