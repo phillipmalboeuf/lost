@@ -8,7 +8,7 @@ import contentful from './clients/contentful'
 import { Boat } from './models/boat'
 import { Map } from './models/map'
 import { Crew, Stats } from './models/crew'
-import { Obstacle, ObstacleContent } from './models/obstacle'
+import { Obstacle, ObstacleContent, ObstacleDocument } from './models/obstacle'
 import { distanceBetween } from '../helpers/geometry'
 
 
@@ -100,7 +100,7 @@ const events = {
 
     const [boat, content] = await Promise.all([
       Boat.one({ _id: boat_id }),
-      contentful.getEntries({ content_type: 'obstacle', 'fields.trigger': trigger })
+      (await contentful.getEntries<ObstacleContent>({ content_type: 'obstacle', 'fields.trigger': trigger })).items[0]
     ])
 
     const map = await Map.one({ _id: boat.map_id })
@@ -112,14 +112,26 @@ const events = {
       })
     }
 
+    let current_obstacle_id: string
+    if (!at_port) {
+      current_obstacle_id = (await Obstacle.createOne({
+        boat_id,
+        trigger,
+        content_id: content.sys.id
+      }))._id
+
+      if (content.fields.loseCrew) {
+        const crew = await Crew.list({ boat_id })
+        const randomCrew = Math.floor(Math.random() * crew.length)
+
+        Crew.updateOne({ _id: crew[randomCrew]._id }, { lost: true })
+      }
+    }
+
     Boat.updateOne({ _id: boat_id }, {
       position,
       at_port,
-      current_obstacle_id: !at_port ? (await Obstacle.createOne({
-        boat_id,
-        trigger,
-        content_id: content.items[0].sys.id
-      }))._id : undefined,
+      current_obstacle_id,
       triggers: [...(boat.triggers ?? []), trigger]
     })
   },
@@ -152,6 +164,10 @@ const events = {
 
     if (content.fields.loseSleep) {
       Crew.updateMany({ boat_id: obstacle.boat_id }, { slept: 1 })
+    }
+
+    if (content.fields.loseCrew) {
+      Crew.updateMany({ boat_id: obstacle.boat_id }, { lost: false })
     }
 
     return Boat.updateOne({ _id: obstacle.boat_id }, { current_obstacle_id: undefined })

@@ -66,7 +66,7 @@ export const Crew: FunctionComponent<{
       {crew && crewList && crew.map(member => ({
         ...member,
         content: crewList.find(c => c.sys.id === member.content_id)
-      })).map(member => <ListItem key={member._id}>
+      })).map(member => <ListItem key={member._id} disabled={member.lost}>
         <Subtitle>{member.name} – {member.content.fields.title}</Subtitle>
         {stats(member, member.content.fields, boat.current_obstacle_id
           ? contribute(member._id)

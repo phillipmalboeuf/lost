@@ -15,6 +15,16 @@ export const ListItem = styled.li`
   padding: ${text[1]} 0;
   border-bottom: 2px solid ${ink[0]};
 
+  ${({ disabled }) => disabled && css`
+    text-decoration: line-through;
+    pointer-events: none;
+    
+    button {
+      text-decoration: line-through;
+      pointer-events: none;
+    }
+  `}
+
   &:last-child {
     margin-bottom: ${text[1]};
   }

@@ -6,6 +6,7 @@ export interface ObstacleContent {
   title: string
   description: string
   loseSleep: boolean
+  loseCrew: boolean
   overcome: string
   money: number
   bravery: number
