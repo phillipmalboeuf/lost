@@ -5,15 +5,17 @@ import { Entry } from 'contentful'
 export interface ObstacleContent {
   title: string
   description: string
-  loseSleep: boolean
   loseCrew: boolean
   overcome: string
   money: number
+  loseSleep: boolean
   bravery: number
   intelligence: number
   charm: number
   dexterity: number
   alternateOvercome: string
+  alternateMoney: any
+  alternateLoseSleep: any
   alternate_bravery: number
   alternate_intelligence: number
   alternate_charm: number

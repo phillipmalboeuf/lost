@@ -72,8 +72,8 @@ export const B: FunctionComponent<RouteComponentProps<{ _id: string }>> = props 
     }
   }
 
-  function overcome() {
-    send('overcome', { obstacle_id: boat.current_obstacle_id })
+  function overcome(alternate: boolean) {
+    send('overcome', { obstacle_id: boat.current_obstacle_id, alternate })
   }
 
   function leavePort() {

@@ -16,7 +16,7 @@ import { Entry } from 'contentful'
 export const Obstacle: FunctionComponent<{
   _id: string
   crew: CrewDocument[]
-  onOvercome: () => void
+  onOvercome: (alternate: boolean) => void
 }> = ({ _id, onOvercome, crew }) => {
 
   const obstacle = useEvent<ObstacleDocument>('watchObstacle', { _id })
@@ -97,11 +97,11 @@ export const Obstacle: FunctionComponent<{
           {function() {
             
             if (overcame.bravery && overcame.intelligence && overcame.charm && overcame.dexterity) {
-              return <Button onClick={onOvercome}>{content.fields.overcome}</Button>
+              return <Button onClick={() => onOvercome(false)}>{content.fields.overcome}</Button>
             }
 
             if (content.fields.alternateOvercome && alternateOvercame.bravery && alternateOvercame.intelligence && alternateOvercame.charm && alternateOvercame.dexterity) {
-              return <Button onClick={onOvercome}>{content.fields.alternateOvercome}</Button>
+              return <Button onClick={() => onOvercome(true)}>{content.fields.alternateOvercome}</Button>
             }
 
             return <Button disabled>Overcome</Button>

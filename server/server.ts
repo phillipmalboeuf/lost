@@ -152,18 +152,30 @@ const events = {
     Obstacle.updateOne({ _id: obstacle_id }, { [`contributions.${crew_id}.${stat}`]: 1 }, '$inc')
     return Crew.updateOne({ _id: crew_id }, { [stat]: -1 }, '$inc')
   },
-  overcome: async ({ obstacle_id }) => {
+  overcome: async ({ obstacle_id, alternate }) => {
     const obstacle = await Obstacle.one({ _id: obstacle_id })
     const content = await contentful.getEntry<ObstacleContent>(obstacle.content_id)
 
-    if (content.fields.money) {
-      Boat.updateOne({ _id: obstacle.boat_id }, {
-        gold: Math.round(Math.random() * content.fields.money) + content.fields.money
-      }, '$inc')  
-    }
+    if (!alternate) {
+      if (content.fields.money) {
+        Boat.updateOne({ _id: obstacle.boat_id }, {
+          gold: Math.round(Math.random() * content.fields.money) + content.fields.money
+        }, '$inc')  
+      }
 
-    if (content.fields.loseSleep) {
-      Crew.updateMany({ boat_id: obstacle.boat_id }, { slept: 1 })
+      if (content.fields.loseSleep) {
+        Crew.updateMany({ boat_id: obstacle.boat_id }, { slept: 1 })
+      }
+    } else {
+      if (content.fields.alternateMoney) {
+        Boat.updateOne({ _id: obstacle.boat_id }, {
+          gold: Math.round(Math.random() * content.fields.money) + content.fields.money
+        }, '$inc')  
+      }
+
+      if (content.fields.alternateLoseSleep) {
+        Crew.updateMany({ boat_id: obstacle.boat_id }, { slept: 1 })
+      }
     }
 
     if (content.fields.loseCrew) {
