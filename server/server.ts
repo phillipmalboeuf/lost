@@ -2,6 +2,7 @@
 import WebSocket, { Server, LostSocket } from 'ws'
 import json from 'json-complete'
 
+import { CONF } from './config'
 import { db } from './clients/mongo'
 import contentful from './clients/contentful'
 
@@ -12,6 +13,7 @@ import { Obstacle, ObstacleContent, ObstacleDocument } from './models/obstacle'
 import { distanceBetween } from '../helpers/geometry'
 
 
+
 declare module 'ws' {
   type LostSocket = WebSocket & {
     boat: string
@@ -20,9 +22,9 @@ declare module 'ws' {
 }
 
 const wss = new Server({
-  port: 8088
+  port: CONF('SERVER_PORT')
 }, () => {
-  console.log(`> Running on localhost:8088`)
+  console.log(`> Running on localhost:${CONF('SERVER_PORT')}`)
 })
 
 

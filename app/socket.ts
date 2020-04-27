@@ -1,7 +1,7 @@
 import json from 'json-complete'
 import { useState, useEffect } from 'react'
 
-let ws = new WebSocket('ws://localhost:8088')
+let ws = new WebSocket(process.env.NODE_ENV === 'production' ? 'wss://socket.playlostatsea.com' : 'ws://localhost:8088')
 
 ws.onopen = function connected() {
   ws.dispatchEvent(new CustomEvent('ready'))
