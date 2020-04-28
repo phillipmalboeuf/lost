@@ -101,6 +101,8 @@ export function useCrew(boat_id: string) {
   const fetch = useEvent<CrewDocument[]>('fetchCrew', { boat_id })
 
   function updateMember(e: CustomEvent<CrewDocument>) {
+    console.log(crew)
+    console.log(e.detail)
     setCrew({
       ...crew,
       [e.detail._id]: e.detail
@@ -115,11 +117,15 @@ export function useCrew(boat_id: string) {
           [member._id]: member
         }
       }, {}))
-      
+    }
+  }, [fetch])
+
+  useEffect(() => {
+    if (crew) {
       on('watchCrewMember', updateMember)
       return () => off('watchCrewMember', updateMember)
     }
-  }, [fetch])
+  }, [crew])
 
   return crew && Object.values(crew)
 }
