@@ -6,8 +6,42 @@
   <title>Lost at Sea</title>
 
   <style>
-    html {
+    @font-face {
       font-family: 'Inter';
+      src: url('fonts/Inter-Bold.woff2') format('woff2'),
+        url('fonts/Inter-Bold.woff') format('woff');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      src: url('fonts/Inter-Regular.woff2') format('woff2'),
+        url('fonts/Inter-Regular.woff') format('woff');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Tiempos Headline Test';
+      src: url('fonts/TiemposHeadlineTest-Bold.woff') format('woff');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Tiempos Headline Test';
+      src: url('fonts/TiemposHeadlineTest-Regular.woff') format('woff');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    html {
+      font-family: 'Inter', sans-serif;
       font-size: 20px;
     }
 
@@ -16,7 +50,7 @@
     }
 
     h1, h2 {
-      font-family: 'Tiempos Headline Test';
+      font-family: 'Tiempos Headline Test', serif;
     }
 
     h2 {
