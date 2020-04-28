@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "NODE_ENV=production node dist/server.js",
-    "build": "parcel build index.html --detailed-report && parcel build server/server.ts --target=node --out-file=server.js",
+    "build": "parcel build index.html --detailed-report && parcel build server/server.ts --target=node --out-file=server.js && cp _redirects dist/_redirects",
     "app": "parcel index.html -p 8080 --open --no-hmr",
     "server": "parcel watch server/server.ts --target=node --out-file=server.js | nodemon dist/server.js"
   },
