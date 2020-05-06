@@ -101,8 +101,6 @@ export function useCrew(boat_id: string) {
   const fetch = useEvent<CrewDocument[]>('fetchCrew', { boat_id })
 
   function updateMember(e: CustomEvent<CrewDocument>) {
-    console.log(crew)
-    console.log(e.detail)
     setCrew({
       ...crew,
       [e.detail._id]: e.detail

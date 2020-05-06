@@ -3,7 +3,7 @@ import React, { FunctionComponent } from 'react'
 import type { ObstacleDocument, ObstacleContent } from '../../server/models/obstacle'
 import type { CrewDocument } from '../../server/models/crew'
 
-import { useEvent } from '../socket'
+import { useEvent, send } from '../socket'
 
 import { Overlay } from './overlay'
 import { Card } from './card'
@@ -62,6 +62,10 @@ export const Obstacle: FunctionComponent<{
     dexterity: false
   })
 
+  function undoContribution(obstacle_id: string, crew_id: string, stat: string, value: number) {
+    send('undoContribution', { obstacle_id, crew_id, stat, value })
+  }
+
   return obstacle && content && <Overlay>
     <Card wide>
       <Title>{content.fields.title}</Title>
@@ -90,7 +94,8 @@ export const Obstacle: FunctionComponent<{
               && Object.entries(obstacle.contributions).map(([crew_id, stats]) => {
                 const member = crew.find(m => m._id === crew_id)
                 return Object.entries(stats).map(([stat, value]) => <ListItem key={`${crew_id}.${stat}`}>
-                  {member.name} contributed {value} {stat}
+                  {member.name} contributed {value} {stat} –&nbsp;
+                  <Button transparent onClick={() => undoContribution(obstacle._id, crew_id, stat, value)}>Undo</Button>
                 </ListItem>)
               })}
           </List>

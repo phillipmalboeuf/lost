@@ -154,6 +154,10 @@ const events = {
     Obstacle.updateOne({ _id: obstacle_id }, { [`contributions.${crew_id}.${stat}`]: 1 }, '$inc')
     return Crew.updateOne({ _id: crew_id }, { [stat]: -1 }, '$inc')
   },
+  undoContribution: async ({ obstacle_id, crew_id, stat, value }) => {
+    Obstacle.updateOne({ _id: obstacle_id }, { [`contributions.${crew_id}.${stat}`]: 1 }, '$unset')
+    return Crew.updateOne({ _id: crew_id }, { [stat]: value }, '$inc')
+  },
   overcome: async ({ obstacle_id, alternate }) => {
     const obstacle = await Obstacle.one({ _id: obstacle_id })
     const content = await contentful.getEntry<ObstacleContent>(obstacle.content_id)
